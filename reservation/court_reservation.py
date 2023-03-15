@@ -1,9 +1,13 @@
+from data_handler import DataHandler
+
 class Reservation:
     def __init__(self):
+        self.data_handler = DataHandler('23.03-30.03.json')
         self.set_name()
         self.set_booking_time()
         self.book_court_period()
         self.print_data()
+        self.validate()
 
     def set_name(self):
         self.name = input('What\'s your Name?')
@@ -20,7 +24,6 @@ class Reservation:
         choosen_period = int(input('How long would you like to book court?'))
         self.choosen_period = available_period[choosen_period-1]
 
-    def validate(self):
 
     def print_data(self):
         print(self.name, self.booking_time, self.choosen_period)

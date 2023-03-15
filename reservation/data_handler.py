@@ -3,7 +3,7 @@ import json
 class DataHandler:
     def __init__(self, filename):
         self.filename = filename
-        self.data = {}
+        self.schedule = {}
 
 
     def save_data(self, data):
@@ -13,7 +13,16 @@ class DataHandler:
 
     def load_data(self):
         with open(self.filename, 'r') as file:
-            self.data = json.load(file)
+            self.schedule = json.load(file)
 
-    def print_data(self):
-        print(self.data)
+    # def print_data(self):
+    #     print(self.schedule)
+    #     print(type(self.schedule))
+    #     for key, value in self.schedule.items():
+    #         print(value)
+
+
+#
+# handler = DataHandler('23.03-30.03.json')
+# handler.load_data()
+# handler.print_data()
