@@ -15,14 +15,13 @@ class DataHandler:
         with open(self.filename, 'r') as file:
             self.schedule = json.load(file)
 
-    # def print_data(self):
-    #     print(self.schedule)
-    #     print(type(self.schedule))
-    #     for key, value in self.schedule.items():
-    #         print(value)
+    def print_data(self):
+        print(self.schedule)
+        for key, value in self.schedule.items():
+            print(key, value)
 
 
-#
-# handler = DataHandler('23.03-30.03.json')
-# handler.load_data()
-# handler.print_data()
+
+handler = DataHandler('23.03-30.03.json')
+handler.load_data()
+handler.print_data()
