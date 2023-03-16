@@ -1,7 +1,7 @@
 from data_handler import DataHandler
 import datetime
-import json
-from filters import search_current_week
+from validators import ReservationValidators
+
 
 class Reservation:
     def __init__(self):
@@ -11,8 +11,8 @@ class Reservation:
         self.data_handler = DataHandler("23.03-30.03.json")
         self.set_name()
         self.set_booking_time()
-        self.book_court_period()
-        self.set_reservation()
+        self.book_reservation_period()
+        self.validate_and_set_reservation()
 
     def set_name(self):
         self.name = input("What's your Name?")
@@ -27,7 +27,7 @@ class Reservation:
         except ValueError:
             print("Invalid date format, Please try again")
 
-    def book_court_period(self):
+    def book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90Minutes")
         chosen_period = int(input("How long would you like to book court?"))
         if chosen_period == 1:
@@ -38,41 +38,25 @@ class Reservation:
             self.booking_period = datetime.timedelta(minutes=90)
         else:
             print("Invalid choice. Please try again.")
-            self.book_court_period()
+            self.book_reservation_period()
 
-    def validate_user_rent_court(self):
-        day_month_booked = self.booking_time
-        self.data_handler.load_data()
-        weekday = day_month_booked.weekday()
-        first_weekday = day_month_booked - datetime.timedelta(days=weekday)
-        last_weekday = first_weekday + datetime.timedelta(days=6)
-        week_data = []
-        for date in self.data_handler.schedule:
-            date_obj = datetime.datetime.strptime(f"{date}.{self.booking_time.year}", "%d.%m.%Y")
-            print(date)
-            print(type(date))
+    def validate_and_set_reservation(self):
+        Validator = ReservationValidators(self.name, self.booking_time)
+        if (
+            Validator.validate_number_of_reservation_per_week() == False
+            or Validator.validate_hour_is_bookable() == False
+        ):
+            print("You are not allowed to book court more then two times per week")
+        else:
+            end_time = self.booking_time + self.booking_period
+            data = {
+                "name": self.name,
+                "start_time": self.booking_time.strftime("%H:%M"),
+                "end_time": end_time.strftime("%H:%M"),
+            }
 
-
-            print(date_obj)
-            print(type(date_obj))
-            if first_weekday <= date_obj <= last_weekday:
-                week_data.append(date)
-        print(first_weekday)
-        print(last_weekday)
-        print(week_data)
-
-
-
-    def set_reservation(self):
-        end_time = self.booking_time + self.booking_period
-        data = {
-            "name": self.name,
-            "start_time": self.booking_time.strftime("%H:%M"),
-            "end_time": end_time.strftime("%H:%M"),
-        }
-
-        date_key = self.booking_time.strftime("%d.%m")
-        self.data_handler.save_reservation_json(date_key, data)
+            date_key = self.booking_time.strftime("%d.%m")
+            self.data_handler.save_reservation_json(date_key, data)
 
 
 R = Reservation()
