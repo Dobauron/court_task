@@ -12,10 +12,10 @@ class DataHandler:
 
     def load_data(self):
         with open(self.filename, "r") as file:
-            self.data = json.load(file)
+            self.schedule = json.load(file)
 
     def print_data(self):
-        print(self.data)
+        print(self.schedule)
 
     def save_reservation_json(self, date_key, data):
         with open("23.03-30.03.json", "r") as f:
