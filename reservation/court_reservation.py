@@ -9,6 +9,9 @@ class Reservation:
         self.booking_time = None
         self.booking_period = None
         self.data_handler = DataHandler("23.03-30.03.json")
+        self.setup_reservation()
+
+    def setup_reservation(self):
         self.set_name()
         self.set_booking_time()
         self.book_reservation_period()
@@ -26,9 +29,10 @@ class Reservation:
 
         except ValueError:
             print("Invalid date format, Please try again")
+            self.set_booking_time()
 
     def book_reservation_period(self):
-        print("1)30 Minutes\n2)60 Minutes\n3)90Minutes")
+        print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
         chosen_period = int(input("How long would you like to book court?"))
         if chosen_period == 1:
             self.booking_period = datetime.timedelta(minutes=30)
@@ -41,12 +45,13 @@ class Reservation:
             self.book_reservation_period()
 
     def validate_and_set_reservation(self):
-        Validator = ReservationValidators(self.name, self.booking_time)
+        validator = ReservationValidators(self.name, self.booking_time)
         if (
-            Validator.validate_number_of_reservation_per_week() == False
-            or Validator.validate_hour_is_bookable() == False
+            validator.validate_number_of_reservation_per_week() is False
+            or validator.validate_hour_is_bookable() is False
+            or validator.validate_hour_is_less_now() is False
         ):
-            print("You are not allowed to book court more then two times per week")
+            self.setup_reservation()
         else:
             end_time = self.booking_time + self.booking_period
             data = {
