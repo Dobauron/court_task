@@ -3,7 +3,7 @@ import datetime
 from validators import ReservationValidators
 
 
-class Reservation:
+class MakeReservation:
     def __init__(self):
         self.name = None
         self.booking_time = None
@@ -82,4 +82,4 @@ class Reservation:
             self.data_handler.save_reservation_json(date_key, data)
 
 
-R = Reservation()
+R = MakeReservation()
