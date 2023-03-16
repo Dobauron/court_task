@@ -3,7 +3,7 @@ import json
 class DataHandler:
     def __init__(self, filename):
         self.filename = filename
-        self.schedule = {}
+        self.data = {}
 
 
     def save_data(self, data):
@@ -13,15 +13,21 @@ class DataHandler:
 
     def load_data(self):
         with open(self.filename, 'r') as file:
-            self.schedule = json.load(file)
+            self.data = json.load(file)
 
     def print_data(self):
-        print(self.schedule)
-        for key, value in self.schedule.items():
-            print(key, value)
+        print(self.data)
 
 
+    def save_reservation_json(self, date_key, data):
+        with open("23.03-30.03.json", "r") as f:
+            existing_reservations = json.load(f)
+        if date_key in existing_reservations:
+            existing_reservations[date_key].append(data)
+        else:
+            existing_reservations[date_key] = [data]
+        # Add the new reservation to the existing reservations
 
-handler = DataHandler('23.03-30.03.json')
-handler.load_data()
-handler.print_data()
+        with open("23.03-30.03.json", "w") as f:
+            # Write the updated reservations to the JSON file
+            json.dump(existing_reservations, f, indent=4)
