@@ -59,7 +59,9 @@ class ReservationValidators:
             # if any data object have same date, check hour reservation
             if date_obj == self.booking_time.date():
                 for user_time_reservation in user_reservation:
-                    if user_time_reservation["start_time"] == self.booking_time.strftime("%H:%M"):
+                    if user_time_reservation[
+                        "start_time"
+                    ] == self.booking_time.strftime("%H:%M"):
                         suggest_other_reservation = input(
                             f"The time you choose is unavailable,"
                             f" would you like to make a reservation for"

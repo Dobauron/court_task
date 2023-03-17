@@ -1,4 +1,4 @@
-from court_reservation import MakeReservation
+from court_reservation import Reservation
 
 
 class Dashboard:
@@ -19,11 +19,15 @@ class Dashboard:
         return user_choice
 
     def main_loop(self):
-        user_choice = self.user_choices()
-        if user_choice == 1:
-            make_reservation = MakeReservation()
-        else:
-            pass
+        reservation = Reservation()
+        while True:
+            user_choice = self.user_choices()
+            if user_choice == 1:
+                reservation.setup_reservation()
+            elif user_choice == 3:
+                reservation.show_schedule()
+            elif user_choice >= 5:
+                break
 
 
 dashboard = Dashboard()
