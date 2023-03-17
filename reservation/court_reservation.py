@@ -80,6 +80,3 @@ class MakeReservation:
 
             date_key = self.booking_time.strftime("%d.%m")
             self.data_handler.save_reservation_json(date_key, data)
-
-
-R = MakeReservation()
