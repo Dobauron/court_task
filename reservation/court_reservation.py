@@ -8,6 +8,7 @@ class Reservation:
         self.name = None
         self.booking_time = None
         self.booking_period = None
+        self.validator = None
         self.data_handler = DataHandler("23.03-30.03.json")
         self.setup_reservation()
 
@@ -26,10 +27,27 @@ class Reservation:
             self.booking_time = datetime.datetime.strptime(
                 booking_date_time_str, "%d.%m.%Y %H:%M"
             )
+            print("booking time", self.booking_time)
 
+            # Create validators object when booking_time  and user name is seted
+            self.validator = ReservationValidators(self.name, self.booking_time)
+
+            # validate day and hour is available for user choice and save answer as new_booking_time
+            new_booking_time = self.validator.validate_hour_is_available_for_chosen_day(
+                self.booking_time
+            )
+            if new_booking_time is False:
+                self.set_booking_time()
+            elif new_booking_time is None:
+                self.setup_reservation()
+            else:
+                # get suggested time and set it in new booking_time if user said 'yes'
+                hour, minute = map(int, new_booking_time.split(":"))
+                self.booking_time = datetime.datetime.combine(
+                    self.booking_time, datetime.time(hour, minute)
+                )
         except ValueError:
             print("Invalid date format, Please try again")
-            self.set_booking_time()
 
     def book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
@@ -45,11 +63,11 @@ class Reservation:
             self.book_reservation_period()
 
     def validate_and_set_reservation(self):
-        validator = ReservationValidators(self.name, self.booking_time)
+
         if (
-            validator.validate_number_of_reservation_per_week() is False
-            or validator.validate_hour_is_bookable() is False
-            or validator.validate_hour_is_less_now() is False
+            self.validator.validate_number_of_reservation_per_week() is False
+            or self.validator.validate_hour_is_bookable() is False
+            or self.validator.validate_hour_is_less_now() is False
         ):
             self.setup_reservation()
         else:
