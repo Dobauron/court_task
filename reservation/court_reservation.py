@@ -11,6 +11,7 @@ class Reservation:
         self.validator = None
         self.schedule = {}
         self.data_handler = DataHandler("23.03-30.03.json")
+        self.validator = ReservationValidators()
 
     def setup_reservation(self):
         self.set_name()
@@ -27,12 +28,10 @@ class Reservation:
             self.booking_time = datetime.datetime.strptime(
                 booking_date_time_str, "%d.%m.%Y %H:%M"
             )
-            # Create validators object when booking_time and username seted
-            self.validator = ReservationValidators(self.name, self.booking_time)
 
             # validate day and hour is available for user choice and save answer as new_booking_time
-            new_booking_time = (
-                self.validator.validate_hour_is_available_for_chosen_day()
+            new_booking_time = self.validator.validate_hour_is_available_for_chosen_day(
+                self.booking_time, self.schedule
             )
             if new_booking_time is True:
                 return
@@ -67,9 +66,15 @@ class Reservation:
     def validate_and_set_reservation(self):
 
         if (
-            self.validator.validate_number_of_reservation_per_week() is False
-            or self.validator.validate_hour_is_bookable() is False
-            or self.validator.validate_hour_is_less_now() is False
+            self.validator.validate_number_of_reservation_per_week(
+                self.booking_time, self.name, self.schedule
+            )
+            is False
+            or self.validator.validate_hour_is_bookable(
+                self.booking_time, self.schedule
+            )
+            is False
+            or self.validator.validate_hour_is_less_now(self.booking_time) is False
         ):
             self.setup_reservation()
         else:
@@ -81,7 +86,10 @@ class Reservation:
             }
 
             date_key = self.booking_time.strftime("%d.%m")
-            self.schedule[date_key] = [data]
+            if date_key in self.schedule:
+                self.schedule[date_key].append(data)
+            else:
+                self.schedule[date_key] = [data]
             # self.data_handler.save_reservation_json(date_key, data)
 
     def show_schedule(self):
