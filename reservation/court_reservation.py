@@ -27,7 +27,7 @@ class Reservation:
             self.booking_time = datetime.datetime.strptime(
                 booking_date_time_str, "%d.%m.%Y %H:%M"
             )
-            # Create validators object when booking_time  and username is seted
+            # Create validators object when booking_time and username seted
             self.validator = ReservationValidators(self.name, self.booking_time)
 
             # validate day and hour is available for user choice and save answer as new_booking_time
@@ -40,7 +40,6 @@ class Reservation:
                 self.set_booking_time()
             elif new_booking_time is None:
                 self.setup_reservation()
-
             else:
                 # get suggested time and set it in new booking_time if user said 'yes'
                 hour, minute = map(int, new_booking_time.split(":"))
@@ -48,7 +47,9 @@ class Reservation:
                     self.booking_time, datetime.time(hour, minute)
                 )
         except ValueError:
+            # reinvoke method if error appear and send message
             print("Invalid date format, Please try again")
+            self.set_booking_time()
 
     def book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
