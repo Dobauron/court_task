@@ -26,7 +26,6 @@ class DataHandler:
             # Add the new reservation to the existing reservations
             existing_reservations[date_key] = [data]
 
-
         with open(self.filename, "w") as f:
             # Write the updated reservations to the JSON file
             json.dump(existing_reservations, f, indent=4)
