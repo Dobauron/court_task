@@ -48,18 +48,18 @@ class ReservationValidators:
             print("Reservation time must be at least one hour ahead from now")
             return False
 
-    def validate_hour_is_available_for_chosen_day(self, booking):
+    def validate_hour_is_available_for_chosen_day(self):
         for date, user_reservation in self.schedule.items():
 
             # convert date to datetime object, add year
             date_obj = datetime.datetime.strptime(
-                f"{date}.{booking.year}", "%d.%m.%Y"
+                f"{date}.{self.booking_time.year}", "%d.%m.%Y"
             ).date()
 
-            # if any data object from database have same date, check hour reservation
-            if date_obj == booking.date():
+            # if any data object have same date, check hour reservation
+            if date_obj == self.booking_time.date():
                 for user_time_reservation in user_reservation:
-                    if user_time_reservation["start_time"] == booking.strftime("%H:%M"):
+                    if user_time_reservation["start_time"] == self.booking_time.strftime("%H:%M"):
                         suggest_other_reservation = input(
                             f"The time you choose is unavailable,"
                             f" would you like to make a reservation for"
@@ -73,3 +73,6 @@ class ReservationValidators:
                             return False
                         else:
                             print("Your answer was uncorrect, let's start again")
+
+        else:
+            return True
