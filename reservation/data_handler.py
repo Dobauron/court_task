@@ -23,8 +23,9 @@ class DataHandler:
         if date_key in existing_reservations:
             existing_reservations[date_key].append(data)
         else:
+            # Add the new reservation to the existing reservations
             existing_reservations[date_key] = [data]
-        # Add the new reservation to the existing reservations
+
 
         with open(self.filename, "w") as f:
             # Write the updated reservations to the JSON file
