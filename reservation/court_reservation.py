@@ -16,7 +16,6 @@ class Reservation:
     def setup_reservation(self):
         self.set_name()
         self.set_booking_time_and_validate()
-        self.book_reservation_period()
         self.set_reservation()
 
     def set_name(self):
@@ -28,11 +27,12 @@ class Reservation:
             self.booking_data = DateTimeConverter.convert_string_date_time(
                 booking_date_time_str
             )
-
+            # need have to period before validation
+            self.book_reservation_period()
             # validate day and hour is available for user choice and save answer as new_booking_time
             new_booking_time = (
                 ReservationValidators.validate_hour_is_bookable_for_chosen_day(
-                    self.booking_data, self.schedule
+                    self.booking_data, self.schedule, self.booking_period
                 )
             )
             # if booking_time is available for chosen date and time
