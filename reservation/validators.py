@@ -25,36 +25,13 @@ class ReservationValidators:
             print("You are not allowed to book court more then two times per week")
             return False
 
-    def validate_hour_is_bookable(self, booking_time, schedule):
-        for date, users_reservation in schedule.items():
-
-            # iter through user value for each day
-            for user_time_reservation in users_reservation:
-
-                #Convert string data to time object
-                start_time = datetime.datetime.strptime(
-                    user_time_reservation["start_time"], "%H:%M"
-                ).time()
-                end_time = datetime.datetime.strptime(
-                    user_time_reservation["end_time"], "%H:%M"
-                ).time()
-                # booking_time = booking_time.time()
-
-
-                # check if user reservation is not in range of other reservation
-                if (
-                    start_time <= booking_time.time() < end_time
-                ):
-                    print("time you trying to book is already reserved, please try another")
-                    return False
-
-    def validate_hour_is_less_now(self, booking_time):
+    def validate_hour_is_not_less_now(self, booking_time):
         # check if booking time is not less than now+1 hour
         if booking_time < datetime.datetime.now() + datetime.timedelta(hours=1):
             print("Reservation time must be at least one hour ahead from now")
             return False
 
-    def validate_hour_is_available_for_chosen_day(self, booking_time, schedule):
+    def validate_hour_is_bookable_for_chosen_day(self, booking_time, schedule):
         for date, user_reservation in schedule.items():
 
             # convert date to datetime object, add year
@@ -65,9 +42,17 @@ class ReservationValidators:
             # if any data object have same date, check hour reservation
             if date_obj == booking_time.date():
                 for user_time_reservation in user_reservation:
-                    if user_time_reservation["start_time"] == booking_time.strftime(
-                        "%H:%M"
-                    ):
+                    start_time = datetime.datetime.strptime(
+                        user_time_reservation["start_time"], "%H:%M"
+                    ).time()
+                    end_time = datetime.datetime.strptime(
+                        user_time_reservation["end_time"], "%H:%M"
+                    ).time()
+                    if start_time <= booking_time.time() < end_time:
+                        print(
+                            "time you trying to book is already reserved, please try another"
+                        )
+
                         suggest_other_reservation = input(
                             f"The time you choose is unavailable,"
                             f" would you like to make a reservation for"
@@ -77,10 +62,10 @@ class ReservationValidators:
                             print(user_time_reservation["end_time"])
                             return user_time_reservation["end_time"]
                         elif suggest_other_reservation == "no":
-                            print(False)
                             return False
                         else:
-                            print("Your answer was uncorrect, let's start again")
+                            print("Your answer was incorrect, let's start again")
+                            self.validate_hour_is_bookable_for_chosen_day(booking_time, schedule)
 
         else:
             return True
