@@ -7,9 +7,9 @@ from date_time_converter import DateTimeConverter
 class Reservation:
     def __init__(self):
         self.name = None
-        self.booking_data = None
+        self.booking_date_time = None
         self.booking_period = None
-        self.validator = None
+        self.validated_booking_time = None
         self.schedule = {}
         self.data_handler = DataHandler("23.03-30.03.json")
 
@@ -24,47 +24,40 @@ class Reservation:
     def set_booking_time_and_validate(self):
         booking_date_time_str = input("When would you like to book? {DD.MM.YYYY HH:MM}")
         try:
-            self.booking_data = DateTimeConverter.convert_string_date_time(
+            self.booking_date_time = DateTimeConverter.convert_string_to_date_time(
                 booking_date_time_str
             )
             # need have to period before validation
             self.book_reservation_period()
             # validate day and hour is available for user choice and save answer as new_booking_time
-            new_booking_time = (
+            validated_booking_time = (
                 ReservationValidators.validate_hour_is_bookable_for_chosen_day(
-                    self.booking_data, self.schedule, self.booking_period
+                    self.booking_date_time, self.schedule, self.booking_period
                 )
             )
             # if booking_time is available for chosen date and time
-            if new_booking_time is True:
+            if validated_booking_time is not None and validated_booking_time is not False:
 
                 # validate quantity reservation for user per week
                 # validate time is not less than now+1 hour
                 # if any validation fail reinvoke set booking time
                 if (
                     ReservationValidators.validate_number_of_reservation_per_week(
-                        self.booking_data, self.name, self.schedule
+                        self.booking_date_time, self.name, self.schedule
                     )
                     is False
                     or ReservationValidators.validate_hour_is_not_less_now(
-                        self.booking_data
+                        self.booking_date_time
                     )
                     is False
                 ):
                     self.set_booking_time_and_validate()
+                else:
+                    self.validated_booking_time = validated_booking_time
 
             # if user not said 'no'
-            elif new_booking_time is False:
+            elif validated_booking_time is False:
                 self.set_booking_time_and_validate()
-
-            # validation pass
-            else:
-                # get suggested time and set it in new booking_time if user said 'yes'
-                hour, minute = map(int, new_booking_time.split(":"))
-                self.booking_data = datetime.datetime.combine(
-                    self.booking_data, datetime.time(hour, minute)
-                )
-
         except ValueError:
             # reinvoke method if error appear and send message
             print("Invalid date format, Please try again")
@@ -84,14 +77,16 @@ class Reservation:
             self.book_reservation_period()
 
     def set_reservation(self):
-        end_time = self.booking_data + self.booking_period
+        print(type(self.validated_booking_time))
+        print(self.validated_booking_time)
+        end_time = self.validated_booking_time + self.booking_period
         data = {
             "name": self.name,
-            "start_time": DateTimeConverter.get_time(self.booking_data),
+            "start_time": DateTimeConverter.get_time(self.validated_booking_time),
             "end_time": DateTimeConverter.get_time(end_time),
         }
 
-        date_key = self.booking_data.strftime("%d.%m")
+        date_key = self.booking_date_time.strftime("%d.%m")
         if date_key in self.schedule:
             self.schedule[date_key].append(data)
         else:
