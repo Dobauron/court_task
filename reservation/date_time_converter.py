@@ -24,5 +24,7 @@ class DateTimeConverter:
 
     @staticmethod
     def convert_time_to_datetime(booking_date_time, end_time_reservation):
-        end_time = datetime.datetime.combine(booking_date_time.date(), end_time_reservation)
+        end_time = datetime.datetime.combine(
+            booking_date_time.date(), end_time_reservation
+        )
         return end_time

@@ -5,18 +5,18 @@ from date_time_converter import DateTimeConverter
 
 
 class Reservation:
-    def __init__(self):
+    def __init__(self, data_handler):
         self.name = None
         self.booking_date_time = None
         self.booking_period = None
         self.validated_booking_time = None
-        self.schedule = {}
-        self.data_handler = DataHandler("23.03-30.03.json")
+        self.schedule = data_handler.load_schedule()
+        self.data_handler = data_handler
 
     def setup_reservation(self):
         self.set_name()
         self.set_booking_time_and_validate()
-        self.set_reservation()
+        self.set_than_save_reservation()
 
     def set_name(self):
         self.name = input("What's your Name?")
@@ -36,7 +36,10 @@ class Reservation:
                 )
             )
             # if booking_time is available for chosen date and time
-            if validated_booking_time is not None and validated_booking_time is not False:
+            if (
+                validated_booking_time is not None
+                and validated_booking_time is not False
+            ):
 
                 # validate quantity reservation for user per week
                 # validate time is not less than now+1 hour
@@ -58,6 +61,7 @@ class Reservation:
             # if user not said 'no'
             elif validated_booking_time is False:
                 self.set_booking_time_and_validate()
+
         except ValueError:
             # reinvoke method if error appear and send message
             print("Invalid date format, Please try again")
@@ -76,14 +80,13 @@ class Reservation:
             print("Invalid choice. Please try again.")
             self.book_reservation_period()
 
-    def set_reservation(self):
-        print(type(self.validated_booking_time))
-        print(self.validated_booking_time)
-        end_time = self.validated_booking_time + self.booking_period
+    def set_than_save_reservation(self):
+        validated_new_booking_start_time = self.validated_booking_time[0]
+        validated_new_booking_end_time = self.validated_booking_time[1]
         data = {
             "name": self.name,
-            "start_time": DateTimeConverter.get_time(self.validated_booking_time),
-            "end_time": DateTimeConverter.get_time(end_time),
+            "start_time": DateTimeConverter.get_time(validated_new_booking_start_time),
+            "end_time": DateTimeConverter.get_time(validated_new_booking_end_time),
         }
 
         date_key = self.booking_date_time.strftime("%d.%m")
@@ -91,7 +94,7 @@ class Reservation:
             self.schedule[date_key].append(data)
         else:
             self.schedule[date_key] = [data]
-        # self.data_handler.save_reservation_json(date_key, data)
+        self.data_handler.save_reservation_in_json(date_key, data)
 
     def show_schedule(self):
         print("this is schedule", self.schedule)

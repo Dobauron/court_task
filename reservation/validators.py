@@ -27,7 +27,6 @@ class ReservationValidators:
             print("You are not allowed to book court more then two times per week")
             return False
 
-
     @staticmethod
     def validate_hour_is_not_less_now(booking_time):
         # check if booking time is not less than now+1 hour
@@ -35,24 +34,26 @@ class ReservationValidators:
             print("Reservation time must be at least one hour ahead from now")
             return False
 
-
     @staticmethod
     def validate_hour_is_bookable_for_chosen_day(
         booking_date_time, schedule, booking_period
     ):
         reserved_periods = create_schedule_list(booking_date_time, schedule)
 
-        next_booking_time = search_for_next_open_term(
+        validated_booking_time = search_for_next_open_term(
             booking_date_time, reserved_periods, booking_period
         )
-        if len(reserved_periods) >= 1:
+        print('val',validated_booking_time, 'end', booking_date_time)
+        # if validated_booking_time <= reserved_periods[0][0]:
+        #     return validated_booking_time
+        if validated_booking_time[0] != booking_date_time.time():
             suggest_other_reservation = input(
                 f"The time you choose is unavailable,"
                 f" would you like to make a reservation for"
-                f" {next_booking_time} instead (yes/no)"
+                f" {validated_booking_time[1]} instead (yes/no)"
             )
             if suggest_other_reservation == "yes":
-                return next_booking_time
+                return validated_booking_time
             elif suggest_other_reservation == "no":
                 return False
             else:
@@ -60,9 +61,9 @@ class ReservationValidators:
                 ReservationValidators.validate_hour_is_bookable_for_chosen_day(
                     booking_date_time, schedule, booking_period
                 )
-        else:
-            return booking_date_time
 
+        else:
+            return validated_booking_time
 
 
 def create_schedule_list(booking_date_time, schedule):
@@ -70,7 +71,9 @@ def create_schedule_list(booking_date_time, schedule):
     for date, user_reservation in schedule.items():
 
         # convert date to datetime object, add year
-        date_obj = DateTimeConverter.convert_string_to_date(date, booking_date_time.year)
+        date_obj = DateTimeConverter.convert_string_to_date(
+            date, booking_date_time.year
+        )
 
         # if any data object have same date, check hour reservation
         if date_obj == booking_date_time.date():
@@ -85,33 +88,64 @@ def create_schedule_list(booking_date_time, schedule):
                 reserved_periods.append((start_time_schedule, end_time_schedule))
 
     else:
+        reserved_periods.sort()
         return reserved_periods
 
 
 def search_for_next_open_term(booking_date_time, reserved_periods, booking_period):
     booking_end = booking_date_time + booking_period
     booking_end_time = booking_end.time()
+    start_time_first_reservation = reserved_periods[0][0]
+    end_time_first_reservation = reserved_periods[0][1]
+    check_next_reservation = get_next_reservation_time(
+        start_time_first_reservation,
+        end_time_first_reservation,
+        reserved_periods,
+        booking_end_time,
+        booking_period,
+        booking_date_time
+    )
+    return check_next_reservation
 
-    print(booking_date_time)
-    for el in range(len(reserved_periods)):
-        start_time_reservation = reserved_periods[el][0]
-        end_time_reservation = reserved_periods[el][1]
-        try:
-            start_time_next_reservation = reserved_periods[el+1][0]
-        except IndexError:
-            print('except', end_time_reservation)
-            return DateTimeConverter.convert_time_to_datetime(booking_date_time,end_time_reservation)
-        if booking_end_time <= start_time_reservation:
-            return booking_date_time
-        elif (
-            end_time_reservation >= booking_date_time.time()
-            and start_time_next_reservation <= booking_end_time
-        ):
-            print('uha')
-            continue
-        else:
-            continue
-    else:
-        print('else')
-        return booking_end
 
+def get_next_reservation_time(
+    start_time_reserved_term, end_time_reserved_term, reserved_periods, booking_end_time, booking_period, booking_date_time
+):
+    try:
+
+        index = reserved_periods.index((start_time_reserved_term, end_time_reserved_term))
+        next_reservation = reserved_periods[index + 1]
+        next_reservation_start_time = next_reservation[0]
+        next_reservation_end_time = next_reservation[1]
+        end_time = DateTimeConverter.convert_time_to_datetime(booking_date_time, end_time_reserved_term)
+        next_booking_end_time = end_time + booking_period
+
+        print(booking_date_time.time())
+        print(start_time_reserved_term)
+        if booking_date_time.time() <= start_time_reserved_term:
+            print(start_time_reserved_term, '\t', booking_end_time, '\t', next_reservation_start_time, '\t',
+                  next_booking_end_time, '\t', )
+            return (booking_date_time.time(), booking_end_time)
+        elif start_time_reserved_term <= booking_end_time and next_reservation_start_time >= next_booking_end_time.time():
+            # print(booking_date_time.time(), start_time_reserved_term)
+            print(1)
+            new_booking_start_time= booking_end_time
+            new_booking_end_time = DateTimeConverter.convert_time_to_datetime(booking_date_time, booking_end_time, ) + booking_period
+            return (new_booking_start_time, new_booking_end_time.time())
+
+        print(3)
+        next_reservation = get_next_reservation_time(
+            next_reservation_start_time,
+            next_reservation_end_time,
+            reserved_periods,
+            next_booking_end_time.time(),
+            booking_period,
+            booking_date_time
+        )
+        # print(next_reservation)
+        return next_reservation
+    except IndexError:
+        print(reserved_periods[-1])
+        start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(booking_date_time, reserved_periods[-1][0])
+        end_time_reserved_term = start_time_reserved_term + booking_period
+        return (start_time_reserved_term, end_time_reserved_term)

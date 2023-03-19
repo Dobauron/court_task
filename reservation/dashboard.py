@@ -1,4 +1,5 @@
 from court_reservation import Reservation
+from data_handler import DataHandler
 
 
 class Dashboard:
@@ -19,7 +20,8 @@ class Dashboard:
         return user_choice
 
     def main_loop(self):
-        reservation = Reservation()
+
+        reservation = Reservation(DataHandler("23.03-30.03.json"))
         while True:
             user_choice = self.user_choices()
             if user_choice == 1:
