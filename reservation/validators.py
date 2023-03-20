@@ -47,7 +47,7 @@ class ReservationValidators:
         validated_booking_time = ReservationValidators.search_for_next_open_term(
             booking_date_time, reserved_periods, booking_period
         )
-        if validated_booking_time[0] != booking_date_time:
+        if validated_booking_time[0] != booking_date_time.time():
             suggest_other_reservation = input(
                 f"The time you choose is unavailable,"
                 f" would you like to make a reservation for"
@@ -56,7 +56,7 @@ class ReservationValidators:
             if suggest_other_reservation == "yes":
                 return validated_booking_time
             elif suggest_other_reservation == "no":
-                return True
+                return False
             else:
                 print("Your answer was incorrect, let's start again")
                 ReservationValidators.validate_hour_is_bookable_for_chosen_day(
@@ -156,7 +156,7 @@ class ReservationValidators:
 
                     new_booking_end_time = end_time_reserved_term + booking_period
 
-                    return end_time_reserved_term, new_booking_end_time.time()
+                    return end_time_reserved_term.time(), new_booking_end_time.time()
 
             check_next_reservation = (
                 ReservationValidators.get_next_available_reservation_time(
@@ -175,7 +175,7 @@ class ReservationValidators:
                 booking_date_time, reserved_periods[-1][1]
             )
             end_time_reserved_term = start_time_reserved_term + booking_period
-            return start_time_reserved_term, end_time_reserved_term
+            return start_time_reserved_term.time(), end_time_reserved_term.time()
 
     @staticmethod
     def validate_booking_time_is_not_forbidden(booking_date_time):
@@ -189,8 +189,8 @@ class ReservationValidators:
         )
 
         if (
-            booking_date_time < date_time_too_early
-            or booking_date_time > date_time_too_late
+            booking_date_time > date_time_too_early
+            or booking_date_time < date_time_too_late
         ):
             print(
                 "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
