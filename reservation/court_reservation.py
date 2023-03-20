@@ -9,6 +9,8 @@ class Reservation:
         self.booking_date_time = None
         self.booking_period = None
         self.validated_booking_time = None
+        self.cancel_reservation_date = None
+        self.cancel_reservation_time = None
         self.schedule = data_handler.load_schedule()
         self.data_handler = data_handler
 
@@ -89,6 +91,46 @@ class Reservation:
         else:
             self.schedule[date_key] = [data]
         self.data_handler.save_reservation_in_json(date_key, data)
+
+    def cancel_reservation(self):
+        self.set_name()
+        self.set_cancel_reservation_date_time()
+        self.search_for_reservation()
+
+    def set_cancel_reservation_date_time(self):
+        cancel_reservation = input(
+            "Please provide date and time for cancel your reservation {DD.MM.YYYY HH:MM}"
+        )
+        try:
+            cancel_reservation_date_time = (
+                DateTimeConverter.convert_string_to_date_time(cancel_reservation)
+            )
+            cancel_reservation_time = DateTimeConverter.get_time(
+                cancel_reservation_date_time
+            )
+            cancel_reservation_date = DateTimeConverter.get_date(
+                cancel_reservation_date_time
+            )
+            self.cancel_reservation_date = cancel_reservation_date
+            self.cancel_reservation_time = cancel_reservation_time
+        except ValueError:
+            print("Invalid date format, Please try again")
+            self.set_cancel_reservation_date_time()
+
+    def search_for_reservation(self):
+        for date, list_reservation in self.schedule.items():
+            if date == self.cancel_reservation_date:
+                reservation_to_cancel_index = 0
+                for reservation in list_reservation:
+                    if (
+                        reservation["start_time"] == self.cancel_reservation_time
+                        and reservation["name"] == self.name
+                    ):
+                        del self.schedule[self.cancel_reservation_date][
+                            reservation_to_cancel_index
+                        ]
+                    reservation_to_cancel_index += 1
+        print(self.schedule)
 
     def show_schedule(self):
         print("this is schedule", self.schedule)

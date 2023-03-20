@@ -18,9 +18,14 @@ class DateTimeConverter:
         return date_time
 
     @staticmethod
-    def get_time(booking_date_time):
-        time = booking_date_time.strftime("%H:%M")
+    def get_time(date_time):
+        time = date_time.strftime("%H:%M")
         return time
+
+    @staticmethod
+    def get_date(date_time):
+        date = date_time.strftime("%d.%m")
+        return date
 
     @staticmethod
     def convert_time_to_datetime(date, time_to_convert):

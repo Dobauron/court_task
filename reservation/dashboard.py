@@ -26,6 +26,8 @@ class Dashboard:
             user_choice = self.user_choices()
             if user_choice == 1:
                 reservation.setup_reservation()
+            elif user_choice == 2:
+                reservation.cancel_reservation()
             elif user_choice == 3:
                 reservation.show_schedule()
             elif user_choice >= 5:
