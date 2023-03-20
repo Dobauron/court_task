@@ -127,14 +127,16 @@ class ReservationValidators:
             start_time_first_reservation = reserved_periods[0][0]
 
             if booking_end_time <= start_time_first_reservation:
+                print(1)
 
-                return (booking_date_time.time(), booking_end_time)
+                return booking_date_time.time(), booking_end_time
 
             elif (
                 start_time_reserved_term <= booking_end_time
                 and next_reservation_start_time >= next_booking_end_time.time()
             ):
-
+                print(start_time_reserved_term, booking_end_time, next_reservation_start_time, next_booking_end_time.time())
+                print(2)
                 new_booking_start_time = DateTimeConverter.convert_time_to_datetime(
                     booking_date_time, end_time_reserved_term
                 )
@@ -145,11 +147,13 @@ class ReservationValidators:
                     )
                     + booking_period
                 )
-                return (new_booking_start_time, new_booking_end_time.time())
+                print(new_booking_start_time, new_booking_end_time.time())
+                return new_booking_start_time, new_booking_end_time.time()
 
             elif booking_date_time.time() >= end_time_last_reservation:
-
-                return (booking_date_time.time(), booking_end_time)
+                print(3)
+                return booking_date_time.time(), booking_end_time
+            print(0)
 
             next_reservation = ReservationValidators.get_next_available_reservation_time(
                 next_reservation_start_time,
@@ -161,11 +165,12 @@ class ReservationValidators:
             )
             return next_reservation
         except IndexError:
+            print(4)
             start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
                 booking_date_time, reserved_periods[-1][1]
             )
             end_time_reserved_term = start_time_reserved_term + booking_period
-            return (start_time_reserved_term, end_time_reserved_term)
+            return start_time_reserved_term, end_time_reserved_term
 
 
 
