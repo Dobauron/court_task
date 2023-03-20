@@ -54,4 +54,4 @@ class DataHandler:
         """
         Returns the start time of a reservation data element for sorting purposes.
         """
-        return el['start_time']
+        return el["start_time"]

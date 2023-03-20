@@ -1,4 +1,3 @@
-from data_handler import DataHandler
 import datetime
 from validators import ReservationValidators
 from date_time_converter import DateTimeConverter
@@ -27,9 +26,18 @@ class Reservation:
             self.booking_date_time = DateTimeConverter.convert_string_to_date_time(
                 booking_date_time_str
             )
-            # need have to period before validation
+            if (
+                ReservationValidators.validate_booking_time_is_not_forbidden(
+                    self.booking_date_time
+                )
+                is False
+            ):
+                print(1)
+                self.set_booking_time_and_validate()
+
+
             self.book_reservation_period()
-            # validate day and hour is available for user choice and save answer as new_booking_time
+
             validated_booking_time = (
                 ReservationValidators.validate_hour_is_bookable_for_chosen_day(
                     self.booking_date_time, self.schedule, self.booking_period
@@ -54,12 +62,11 @@ class Reservation:
                     )
                     is False
                 ):
-                    self.set_booking_time_and_validate()
-                else:
                     self.validated_booking_time = validated_booking_time
 
             # if user not said 'no'
-            elif validated_booking_time is False:
+            elif validated_booking_time is True:
+                print(3)
                 self.set_booking_time_and_validate()
 
         except ValueError:
