@@ -26,7 +26,6 @@ class ReservationValidators:
 
     @staticmethod
     def validate_hour_is_not_less_now(booking_time):
-        # check if booking time is not less than now+1 hour
         if booking_time < datetime.datetime.now() + datetime.timedelta(hours=1):
             raise ValueError(
                 "Reservation time must be at least one hour ahead from now"
@@ -48,7 +47,7 @@ class ReservationValidators:
         validated_booking_time = ReservationValidators.search_for_next_open_term(
             booking_date_time, reserved_periods, booking_period
         )
-        if validated_booking_time[0] != booking_date_time.time():
+        if validated_booking_time[0] != booking_date_time:
             suggest_other_reservation = input(
                 f"The time you choose is unavailable,"
                 f" would you like to make a reservation for"
@@ -94,81 +93,83 @@ class ReservationValidators:
 
     @staticmethod
     def search_for_next_open_term(booking_date_time, reserved_periods, booking_period):
+        booking_start_time = booking_date_time.time()
         booking_end = booking_date_time + booking_period
         booking_end_time = booking_end.time()
         start_time_first_reservation = reserved_periods[0][0]
         end_time_first_reservation = reserved_periods[0][1]
-        check_next_reservation = (
+        check_current_reservation = (
             ReservationValidators.get_next_available_reservation_time(
                 start_time_first_reservation,
                 end_time_first_reservation,
                 reserved_periods,
-                booking_end_time,
                 booking_period,
                 booking_date_time,
+                booking_start_time,
+                booking_end_time,
             )
         )
-        return check_next_reservation
+        return check_current_reservation
 
     @staticmethod
     def get_next_available_reservation_time(
         start_time_reserved_term,
         end_time_reserved_term,
         reserved_periods,
-        booking_end_time,
         booking_period,
         booking_date_time,
+        booking_start_time,
+        booking_end_time,
     ):
         try:
 
-            index = reserved_periods.index(
+            index_current_reservation = reserved_periods.index(
                 (start_time_reserved_term, end_time_reserved_term)
             )
-            next_reservation = reserved_periods[index + 1]
-            next_reservation_start_time = next_reservation[0]
-            next_reservation_end_time = next_reservation[1]
-            end_time = DateTimeConverter.convert_time_to_datetime(
+            start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
+                booking_date_time, start_time_reserved_term
+            )
+            end_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
                 booking_date_time, end_time_reserved_term
             )
-            next_booking_end_time = end_time + booking_period
+
+            next_reservation = reserved_periods[index_current_reservation + 1]
+            next_reservation_start_time = next_reservation[0]
+            next_reservation_end_time = next_reservation[1]
+            next_booking_start_time = start_time_reserved_term + booking_period
+            next_booking_end_time = end_time_reserved_term + booking_period
+
             end_time_last_reservation = reserved_periods[-1][1]
             start_time_first_reservation = reserved_periods[0][0]
 
-            if booking_end_time <= start_time_first_reservation:
-                return booking_date_time.time(), booking_end_time
-
-            elif (
-                start_time_reserved_term <= booking_end_time
-                and next_reservation_start_time >= next_booking_end_time.time()
+            if (
+                booking_end_time <= start_time_first_reservation
+                or booking_start_time >= end_time_last_reservation
             ):
+                return booking_start_time, booking_end_time
 
-                new_booking_start_time = DateTimeConverter.convert_time_to_datetime(
-                    booking_date_time, end_time_reserved_term
-                )
-                new_booking_end_time = (
-                    DateTimeConverter.convert_time_to_datetime(
-                        booking_date_time,
-                        end_time_reserved_term,
-                    )
-                    + booking_period
-                )
-                return new_booking_start_time, new_booking_end_time.time()
+            elif next_reservation_start_time >= booking_start_time:
+                if (
+                    start_time_reserved_term <= next_booking_start_time
+                    and next_reservation_start_time >= next_booking_end_time.time()
+                ):
 
-            elif booking_date_time.time() >= end_time_last_reservation:
+                    new_booking_end_time = end_time_reserved_term + booking_period
 
-                return booking_date_time.time(), booking_end_time
+                    return end_time_reserved_term, new_booking_end_time.time()
 
-            next_reservation = (
+            check_next_reservation = (
                 ReservationValidators.get_next_available_reservation_time(
                     next_reservation_start_time,
                     next_reservation_end_time,
                     reserved_periods,
-                    next_booking_end_time.time(),
                     booking_period,
-                    booking_date_time,
+                    next_booking_end_time,
+                    booking_start_time,
+                    booking_end_time,
                 )
             )
-            return next_reservation
+            return check_next_reservation
         except IndexError:
             start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
                 booking_date_time, reserved_periods[-1][1]
@@ -188,8 +189,8 @@ class ReservationValidators:
         )
 
         if (
-            booking_date_time <= date_time_too_early
-            or booking_date_time >= date_time_too_late
+            booking_date_time < date_time_too_early
+            or booking_date_time > date_time_too_late
         ):
             print(
                 "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
