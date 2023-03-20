@@ -64,7 +64,6 @@ class Reservation:
 
             # if user not said 'no'
             elif validated_booking_time is True:
-                print(3)
                 self.set_booking_time_and_validate()
 
         except ValueError:
