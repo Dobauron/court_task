@@ -95,7 +95,7 @@ class Reservation:
     def cancel_reservation(self):
         self.set_name()
         self.set_cancel_reservation_date_time()
-        self.search_for_reservation()
+        self.delete_reservation()
 
     def set_cancel_reservation_date_time(self):
         cancel_reservation = input(
@@ -117,19 +117,20 @@ class Reservation:
             print("Invalid date format, Please try again")
             self.set_cancel_reservation_date_time()
 
-    def search_for_reservation(self):
-        for date, list_reservation in self.schedule.items():
-            if date == self.cancel_reservation_date:
-                reservation_to_cancel_index = 0
-                for reservation in list_reservation:
-                    if (
-                        reservation["start_time"] == self.cancel_reservation_time
-                        and reservation["name"] == self.name
-                    ):
-                        del self.schedule[self.cancel_reservation_date][
-                            reservation_to_cancel_index
-                        ]
-                    reservation_to_cancel_index += 1
+    def delete_reservation(self):
+        reservation_to_cancel_index = ReservationValidators.validate_reservation_exist(
+            self.name,
+            self.schedule,
+            self.cancel_reservation_date,
+            self.cancel_reservation_time,
+        )
+        if reservation_to_cancel_index is not False:
+            print(self.schedule[self.cancel_reservation_date][reservation_to_cancel_index])
+            del self.schedule[self.cancel_reservation_date][reservation_to_cancel_index]
+        else:
+            print('There is no reservation with specified data')
+            self.cancel_reservation()
+
         print(self.schedule)
 
     def show_schedule(self):

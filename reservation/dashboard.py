@@ -9,14 +9,14 @@ class Dashboard:
     @staticmethod
     def user_choices():
         print(
-            """Welcome to the most famous tennis court, what you would like to do?
+            """Welcome to the most famous tennis court!
         1.Make reservation
         2.Cancel reservation
         3.Print schedule
         4.Save schedule to a file
         5.Exit"""
         )
-        user_choice = int(input())
+        user_choice = int(input('What you would like to do? '))
         return user_choice
 
     def main_loop(self):
@@ -31,7 +31,8 @@ class Dashboard:
             elif user_choice == 3:
                 reservation.show_schedule()
             elif user_choice >= 5:
-                break
+                print('Please select one of the available choices')
+                continue
 
 
 dashboard = Dashboard()

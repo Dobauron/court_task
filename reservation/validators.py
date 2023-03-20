@@ -196,3 +196,23 @@ class ReservationValidators:
                 "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
             )
             return False
+
+    @staticmethod
+    def validate_reservation_exist(
+        name, schedule, cancel_reservation_date, cancel_reservation_time
+    ):
+        for date, list_reservation in schedule.items():
+            if date == cancel_reservation_date:
+                reservation_to_cancel_index = 0
+                for reservation in list_reservation:
+                    if (
+                        reservation["start_time"] == cancel_reservation_time
+                        and reservation["name"] == name
+                    ):
+                        return reservation_to_cancel_index
+                    else:
+                        reservation_to_cancel_index += 1
+                        continue
+                else:
+                    return False
+
