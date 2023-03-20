@@ -18,7 +18,9 @@ class ReservationValidators:
                     if day == date_obj and user_data["name"] == name:
                         user_reservation_current_week += 1
         if user_reservation_current_week >= 2:
-            print("You are not allowed to book court more then two times per week")
+            print(
+                "You are not allowed to book court more then two times per week\tYou can make reservation next week"
+            )
         else:
             return False
 
@@ -70,8 +72,6 @@ class ReservationValidators:
             date_obj = DateTimeConverter.convert_string_to_date(
                 date, booking_date_time.year
             )
-
-            # if any data object have same date, check hour reservation
             if date_obj == booking_date_time.date():
 
                 for user_time_reservation in user_reservation:

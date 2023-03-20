@@ -29,7 +29,6 @@ class Reservation:
             booking_date_time = DateTimeConverter.convert_string_to_date_time(
                 booking_date_time_str
             )
-            print(booking_date_time)
             validation = self.validate(booking_date_time)
             if validation is not False:
                 self.validated_booking_time = validation
@@ -45,23 +44,28 @@ class Reservation:
             )
             is False
         ):
-            self.set_book_reservation_period()
-            validated_booking_time = (
-                ReservationValidators.validate_hour_is_bookable_for_chosen_day(
-                    booking_date_time, self.schedule, self.booking_period
-                )
-            )
             if (
                 ReservationValidators.validate_number_of_reservation_per_week(
                     booking_date_time, self.name, self.schedule
                 )
                 is False
-                or ReservationValidators.validate_hour_is_not_less_now(
-                    booking_date_time
-                )
-                is False
             ):
-                return validated_booking_time
+                self.set_book_reservation_period()
+                validated_booking_time = (
+                    ReservationValidators.validate_hour_is_bookable_for_chosen_day(
+                        booking_date_time, self.schedule, self.booking_period
+                    )
+                )
+                if (
+                    ReservationValidators.validate_hour_is_not_less_now(
+                        booking_date_time
+                    )
+                    is False
+                ):
+
+                    return validated_booking_time
+            else:
+                self.setup_reservation()
 
         else:
             return False
@@ -141,8 +145,6 @@ class Reservation:
             self.cancel_reservation()
 
         self.cancel_reservation()
-
-        print(self.schedule)
 
     def show_schedule(self):
         print("this is schedule", self.schedule)
