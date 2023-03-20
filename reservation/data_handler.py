@@ -50,7 +50,8 @@ class DataHandler:
         for date, reservation_data in self.schedule.items():
             self.schedule[date] = sorted(reservation_data, key=self.get_start_time)
 
-    def get_start_time(self, el):
+    @staticmethod
+    def get_start_time(el):
         """
         Returns the start time of a reservation data element for sorting purposes.
         """
