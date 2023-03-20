@@ -23,6 +23,6 @@ class DateTimeConverter:
         return time
 
     @staticmethod
-    def convert_time_to_datetime(booking_date_time, time_to_convert):
-        end_time = datetime.datetime.combine(booking_date_time.date(), time_to_convert)
+    def convert_time_to_datetime(date, time_to_convert):
+        end_time = datetime.datetime.combine(date.date(), time_to_convert)
         return end_time

@@ -35,7 +35,6 @@ class Reservation:
                 print(1)
                 self.set_booking_time_and_validate()
 
-
             self.book_reservation_period()
 
             validated_booking_time = (
