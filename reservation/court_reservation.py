@@ -32,7 +32,6 @@ class Reservation:
                 )
                 is False
             ):
-                print(1)
                 self.set_booking_time_and_validate()
 
             self.book_reservation_period()
