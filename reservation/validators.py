@@ -174,7 +174,7 @@ class ReservationValidators:
             return start_time_reserved_term.time(), end_time_reserved_term.time()
 
     @staticmethod
-    def validate_booking_time_is_not_forbidden(booking_date_time):
+    def validate_booking_time_is_not_forbidden(booking_date_time, validated_booking_time = None):
         too_early = DateTimeConverter.convert_string_to_time("06:00")
         too_late = DateTimeConverter.convert_string_to_time("22:00")
         date_time_too_early = DateTimeConverter.convert_time_to_datetime(
@@ -184,15 +184,31 @@ class ReservationValidators:
             booking_date_time, too_late
         )
 
-        if (
-            booking_date_time < date_time_too_early
-            or booking_date_time > date_time_too_late
-        ):
-            print(
-                "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
-            )
-            return
-        return False
+        if validated_booking_time is None:
+            print(1)
+            if (
+                booking_date_time < date_time_too_early
+                or booking_date_time > date_time_too_late
+            ):
+                print(
+                    "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
+                )
+                return
+            return False
+        else:
+            print(2)
+            validated_booking_start_time = validated_booking_time[0]
+            validated_booking_end_time = validated_booking_time[1]
+            print(validated_booking_start_time)
+            print(validated_booking_end_time)
+            if (
+                validated_booking_start_time < date_time_too_early
+                or validated_booking_end_time > date_time_too_late
+            ):
+                print(
+                    "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
+                )
+                return False
 
     @staticmethod
     def validate_reservation_exist(
