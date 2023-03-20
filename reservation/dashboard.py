@@ -16,7 +16,7 @@ class Dashboard:
         4.Save schedule to a file
         5.Exit"""
         )
-        user_choice = int(input('What you would like to do? '))
+        user_choice = int(input("What you would like to do? "))
         return user_choice
 
     def main_loop(self):
@@ -31,7 +31,7 @@ class Dashboard:
             elif user_choice == 3:
                 reservation.show_schedule()
             elif user_choice >= 5:
-                print('Please select one of the available choices')
+                print("Please select one of the available choices")
                 continue
 
 

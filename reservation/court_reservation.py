@@ -11,6 +11,7 @@ class Reservation:
         self.validated_booking_time = None
         self.cancel_reservation_date = None
         self.cancel_reservation_time = None
+        self.cancel_reservation_date_time = None
         self.schedule = data_handler.load_schedule()
         self.data_handler = data_handler
 
@@ -28,6 +29,7 @@ class Reservation:
             booking_date_time = DateTimeConverter.convert_string_to_date_time(
                 booking_date_time_str
             )
+            print(booking_date_time)
             validation = self.validate(booking_date_time)
             if validation is not False:
                 self.validated_booking_time = validation
@@ -111,6 +113,7 @@ class Reservation:
             cancel_reservation_date = DateTimeConverter.get_date(
                 cancel_reservation_date_time
             )
+            self.cancel_reservation_date_time = cancel_reservation_date_time
             self.cancel_reservation_date = cancel_reservation_date
             self.cancel_reservation_time = cancel_reservation_time
         except ValueError:
@@ -118,17 +121,27 @@ class Reservation:
             self.set_cancel_reservation_date_time()
 
     def delete_reservation(self):
-        reservation_to_cancel_index = ReservationValidators.validate_reservation_exist(
-            self.name,
-            self.schedule,
-            self.cancel_reservation_date,
-            self.cancel_reservation_time,
-        )
-        if reservation_to_cancel_index is not False:
-            print(self.schedule[self.cancel_reservation_date][reservation_to_cancel_index])
-            del self.schedule[self.cancel_reservation_date][reservation_to_cancel_index]
-        else:
-            print('There is no reservation with specified data')
+        try:
+            reservation_to_cancel_index = ReservationValidators.validate_reservation_exist(
+                self.name,
+                self.schedule,
+                self.cancel_reservation_date,
+                self.cancel_reservation_time,
+            )
+            if (
+                reservation_to_cancel_index is not False
+                and ReservationValidators.validate_hour_is_not_less_now(
+                    self.cancel_reservation_date_time
+                )
+                is False
+            ):
+                del self.schedule[self.cancel_reservation_date][reservation_to_cancel_index]
+            else:
+                print("There is no reservation with specified data")
+                self.cancel_reservation()
+        except ValueError:
+            print("Reservation time must be at least one hour ahead from now")
+
             self.cancel_reservation()
 
         print(self.schedule)

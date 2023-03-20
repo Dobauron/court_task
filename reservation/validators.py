@@ -18,18 +18,14 @@ class ReservationValidators:
                     if day == date_obj and user_data["name"] == name:
                         user_reservation_current_week += 1
         if user_reservation_current_week >= 2:
-            raise ValueError(
-                "You are not allowed to book court more then two times per week"
-            )
+            print("You are not allowed to book court more then two times per week")
         else:
             return False
 
     @staticmethod
     def validate_hour_is_not_less_now(booking_time):
         if booking_time < datetime.datetime.now() + datetime.timedelta(hours=1):
-            raise ValueError(
-                "Reservation time must be at least one hour ahead from now"
-            )
+            raise ValueError
         else:
             return False
 
@@ -189,13 +185,14 @@ class ReservationValidators:
         )
 
         if (
-            booking_date_time > date_time_too_early
-            or booking_date_time < date_time_too_late
+            booking_date_time < date_time_too_early
+            or booking_date_time > date_time_too_late
         ):
             print(
                 "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
             )
-            return False
+            return
+        return False
 
     @staticmethod
     def validate_reservation_exist(
@@ -215,4 +212,3 @@ class ReservationValidators:
                         continue
                 else:
                     return False
-
