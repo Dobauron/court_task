@@ -25,7 +25,7 @@ class ReservationValidators:
     @staticmethod
     def validate_hour_is_not_less_now(booking_time):
         if booking_time < datetime.datetime.now() + datetime.timedelta(hours=1):
-            raise ValueError
+            print("Reservation time must be at least one hour ahead from now")
         else:
             return False
 
