@@ -98,10 +98,14 @@ class Reservation:
         validated_new_booking_end_time = self.validated_booking_time[1]
         data = {
             "name": self.name,
-            "start_time": DateTimeConverter.get_time(validated_new_booking_start_time),
-            "end_time": DateTimeConverter.get_time(validated_new_booking_end_time),
+            "start_time": DateTimeConverter.get_string_time(
+                validated_new_booking_start_time
+            ),
+            "end_time": DateTimeConverter.get_string_time(
+                validated_new_booking_end_time
+            ),
         }
-        date_key = self.booking_date_time.strftime("%d.%m")
+        date_key = self.booking_date_time.strftime("%d.%m.%Y")
         if date_key in self.schedule:
             self.schedule[date_key].append(data)
         else:
@@ -115,16 +119,16 @@ class Reservation:
 
     def set_cancel_reservation_date_time(self):
         cancel_reservation = input(
-            "Please provide date and time for cancel your reservation {DD.MM.YYYY HH:MM}"
+            "Please provide date and time for cancel your reservation {DD.MM.YYYY HH:MM} :"
         )
         try:
             cancel_reservation_date_time = (
                 DateTimeConverter.convert_string_to_date_time(cancel_reservation)
             )
-            cancel_reservation_time = DateTimeConverter.get_time(
+            cancel_reservation_time = DateTimeConverter.get_string_time(
                 cancel_reservation_date_time
             )
-            cancel_reservation_date = DateTimeConverter.get_date(
+            cancel_reservation_date = DateTimeConverter.get_string_time(
                 cancel_reservation_date_time
             )
             self.cancel_reservation_date_time = cancel_reservation_date_time
@@ -135,7 +139,6 @@ class Reservation:
             self.set_cancel_reservation_date_time()
 
     def delete_reservation(self):
-
         reservation_to_cancel_index = ReservationValidators.validate_reservation_exist(
             self.name,
             self.schedule,
@@ -157,4 +160,55 @@ class Reservation:
         self.cancel_reservation()
 
     def show_schedule(self):
-        print("this is schedule", self.schedule)
+        try:
+            start_date = input(
+                "Please specify from which date you want to check the booking {DD.MM.YYYY}: "
+            )
+            end_date = input(
+                "Please specify until which date you want to check your reservation {DD.MM.YYYY}: "
+            )
+            range_date = self.get_all_day_from_user_specify_range(start_date, end_date)
+            for date in range_date:
+                date_str = DateTimeConverter.get_string_date(date)
+                if date_str in self.schedule:
+                    print(self.name_day_in_schedule(date) + ":")
+                    for reservation in self.schedule[date_str]:
+                        print(
+                            "*",
+                            reservation["name"],
+                            reservation["start_time"],
+                            reservation["end_time"],
+                        )
+                    else:
+                        print('\n')
+                else:
+                    print(self.name_day_in_schedule(date) + ":\nNo Reservations\n")
+        except ValueError:
+            print("Invalid date format, Please try again")
+            self.show_schedule()
+
+    @staticmethod
+    def name_day_in_schedule(date):
+        day_name = DateTimeConverter.get_day_name(date)
+        today = datetime.datetime.today().date()
+        tomorrow = today + datetime.timedelta(days=1)
+        yesterday = today - datetime.timedelta(days=1)
+        if date == today:
+            return "Today"
+        elif date == tomorrow:
+            return "Tomorrow"
+        elif date == yesterday:
+            return "Yesterday"
+        else:
+            return day_name
+
+    @staticmethod
+    def get_all_day_from_user_specify_range(start_date, end_date):
+        start_date = DateTimeConverter.convert_string_to_date(start_date)
+        end_date = DateTimeConverter.convert_string_to_date(end_date)
+        all_dates = []
+        current_date = start_date
+        while current_date <= end_date:
+            all_dates.append(current_date)
+            current_date += datetime.timedelta(days=1)
+        return all_dates

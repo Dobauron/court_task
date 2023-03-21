@@ -11,9 +11,7 @@ class ReservationValidators:
         current_week = search_current_week(booking_date_time)
         for day in current_week:
             for date, users_reservation in schedule.items():
-                date_obj = DateTimeConverter.convert_string_to_date(
-                    date, booking_date_time.year
-                )
+                date_obj = DateTimeConverter.convert_string_to_date(date)
                 for user_data in users_reservation:
                     if day == date_obj and user_data["name"] == name:
                         user_reservation_current_week += 1
@@ -67,9 +65,7 @@ class ReservationValidators:
         reserved_periods = []
         for date, user_reservation in schedule.items():
 
-            date_obj = DateTimeConverter.convert_string_to_date(
-                date, booking_date_time.year
-            )
+            date_obj = DateTimeConverter.convert_string_to_date(date)
             if date_obj == booking_date_time.date():
 
                 for user_time_reservation in user_reservation:
@@ -193,12 +189,8 @@ class ReservationValidators:
             booking_start_time = booking_date_time
             booking_end_time = booking_date_time
         else:
-            booking_start_time = DateTimeConverter.convert_time_to_datetime(
-                booking_date_time, validated_booking_time[0]
-            )
-            booking_end_time = DateTimeConverter.convert_time_to_datetime(
-                booking_date_time, validated_booking_time[1]
-            )
+            booking_start_time = validated_booking_time[0]
+            booking_end_time = validated_booking_time[1]
 
         if (
             booking_start_time < date_time_too_early

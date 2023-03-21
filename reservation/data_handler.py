@@ -1,4 +1,5 @@
 import json
+from date_time_converter import DateTimeConverter
 
 
 class DataHandler:
@@ -34,21 +35,29 @@ class DataHandler:
         if date_key in self.schedule:
             self.schedule[date_key].append(data)
         else:
-            # Add the new reservation to the existing reservations
             self.schedule[date_key] = [data]
 
         self.sort_before_save()
 
         with open(self.filename, "w") as f:
-            # Write the updated reservations to the JSON file
             json.dump(self.schedule, f, indent=4)
 
     def sort_before_save(self):
         """
-        Sorts the reservations stored in the schedule attribute based on the start time.
+        Sorts the reservations stored in the schedule attribute first based on date than on start time.
         """
-        for date, reservation_data in self.schedule.items():
-            self.schedule[date] = sorted(reservation_data, key=self.get_start_time)
+        sorted_schedule_by_date = dict(
+            sorted(
+                self.schedule.items(),
+                key=lambda x: DateTimeConverter.convert_string_to_date(x[0]),
+            )
+        )
+        sorted_schedule_by_date_and_start_time = {}
+        for date, reservation_data in sorted_schedule_by_date.items():
+            sorted_schedule_by_date_and_start_time[date] = sorted(
+                reservation_data, key=self.get_start_time
+            )
+        self.schedule = sorted_schedule_by_date_and_start_time
 
     @staticmethod
     def get_start_time(el):
