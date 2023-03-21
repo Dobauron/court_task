@@ -1,4 +1,4 @@
-import json
+import json, csv
 from date_time_converter import DateTimeConverter
 
 
@@ -25,24 +25,48 @@ class DataHandler:
             self.schedule = json.load(file)
         return self.schedule
 
-    def save_reservation_in_json(self, date_key, data):
+    def save_schedule_in_json(self, filename, date_reservation_specified_by_user):
         """
         Saves the reservation data to the JSON file under the specified date key.
         """
 
-        with open(self.filename, "r") as f:
-            self.schedule = json.load(f)
-        if date_key in self.schedule:
-            self.schedule[date_key].append(data)
-        else:
-            self.schedule[date_key] = [data]
+        # with open(self.filename, "r") as f:
+        #     self.schedule = json.load(f)
+        # if date_key in self.schedule:
+        #     self.schedule[date_key].append(data)
+        # else:
+        #     self.schedule[date_key] = [data]
 
-        self.sort_before_save()
+        self.sort_before_save(date_reservation_specified_by_user)
 
-        with open(self.filename, "w") as f:
-            json.dump(self.schedule, f, indent=4)
+        with open(filename, "w") as f:
+            json.dump(date_reservation_specified_by_user, f, indent=4)
 
-    def sort_before_save(self):
+    def save_schedule_in_csv(self, filename, date_reservation_specified_by_user):
+        """
+        Saves the schedule data to a CSV file specified by the given filename.
+        """
+        self.sort_before_save(filename)
+        with open(filename, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(
+                [
+                    "Name",
+                    "Start Time",
+                    "End Time",
+                ]
+            )
+            for date, reservations in date_reservation_specified_by_user.items():
+                for r in reservations:
+                    writer.writerow(
+                        [
+                            r["name"],
+                            date + " " + r["start_time"],
+                            date + " " + r["end_time"],
+                        ]
+                    )
+
+    def sort_before_save(self, schedule):
         """
         Sorts the reservations stored in the schedule attribute first based on date than on start time.
         """

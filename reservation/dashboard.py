@@ -34,6 +34,8 @@ class Dashboard:
                 reservation.cancel_reservation()
             elif user_choice == 3:
                 reservation.show_schedule()
+            elif user_choice == 4:
+                reservation.save_to_file()
             elif user_choice >= 5:
                 print("Please select one of the available choices")
                 continue

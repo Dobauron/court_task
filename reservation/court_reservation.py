@@ -110,13 +110,12 @@ class Reservation:
                 validated_new_booking_end_time
             ),
         }
-        date_key = self.booking_date_time.strftime("%d.%m.%Y")
+        date_key = DateTimeConverter.get_string_date(self.booking_date_time)
         if date_key in self.schedule:
             self.schedule[date_key].append(data)
         else:
             self.schedule[date_key] = [data]
-        self.data_handler.save_reservation_in_json(date_key, data)
-
+        self.save_to_file()
 
     def set_cancel_reservation_date_time(self):
         cancel_reservation = input(
@@ -162,13 +161,7 @@ class Reservation:
 
     def show_schedule(self):
         try:
-            start_date = input(
-                "Please specify from which date you want to check the booking {DD.MM.YYYY}: "
-            )
-            end_date = input(
-                "Please specify until which date you want to check your reservation {DD.MM.YYYY}: "
-            )
-            range_date = self.get_all_day_from_user_specify_range(start_date, end_date)
+            range_date = self.get_all_day_user_specify_range()
             for date in range_date:
                 date_str = DateTimeConverter.get_string_date(date)
                 if date_str in self.schedule:
@@ -181,7 +174,7 @@ class Reservation:
                             reservation["end_time"],
                         )
                     else:
-                        print('\n')
+                        print("\n")
                 else:
                     print(self.name_day_in_schedule(date) + ":\nNo Reservations\n")
         except ValueError:
@@ -204,7 +197,13 @@ class Reservation:
             return day_name
 
     @staticmethod
-    def get_all_day_from_user_specify_range(start_date, end_date):
+    def get_all_day_user_specify_range():
+        start_date = input(
+            "Please specify from which date you want to print/save the booking {DD.MM.YYYY}: "
+        )
+        end_date = input(
+            "Please specify until which date you want to print/save the booking {DD.MM.YYYY}: "
+        )
         start_date = DateTimeConverter.convert_string_to_date(start_date)
         end_date = DateTimeConverter.convert_string_to_date(end_date)
         all_dates = []
@@ -213,3 +212,35 @@ class Reservation:
             all_dates.append(current_date)
             current_date += datetime.timedelta(days=1)
         return all_dates
+
+    def save_to_file(self):
+        range_date = self.get_all_day_user_specify_range()
+        date_reservation_specified_by_user = {}
+        for date in range_date:
+            date_str = DateTimeConverter.get_string_date(date)
+            if date_str in self.schedule:
+                for reservation in self.schedule[date_str]:
+                    data = {
+                        "name": reservation["name"],
+                        "start_time": reservation["start_time"],
+                        "end_time": reservation["end_time"],
+                    }
+
+                    if date_str in date_reservation_specified_by_user:
+                        date_reservation_specified_by_user[date_str].append(data)
+                    else:
+                        date_reservation_specified_by_user[date_str] = [data]
+
+        file_type = input("Specify, how would you like to save data (json/csv): ")
+        filename = input("Specify, how file should be named")
+        if file_type == "csv":
+            self.data_handler.save_schedule_in_csv(
+                filename + ".csv", date_reservation_specified_by_user
+            )
+        elif file_type == "json":
+            self.data_handler.save_schedule_in_json(
+                filename + ".json", date_reservation_specified_by_user
+            )
+        else:
+            print("You have to choose json or csv")
+            self.save_to_file()
