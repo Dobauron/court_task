@@ -29,7 +29,7 @@ class Reservation:
             booking_date_time = DateTimeConverter.convert_string_to_date_time(
                 booking_date_time_str
             )
-            validation = self.validate(booking_date_time)
+            validation = self.validate_reservation(booking_date_time)
             if validation is not False:
                 self.validated_booking_time = validation
                 self.booking_date_time = booking_date_time
@@ -37,7 +37,7 @@ class Reservation:
             print("Invalid date format, Please try again")
             self.set_booking_date_time()
 
-    def validate(self, booking_date_time):
+    def validate_reservation(self, booking_date_time):
         if (
             ReservationValidators.validate_booking_time_is_not_forbidden(
                 booking_date_time
@@ -56,19 +56,29 @@ class Reservation:
                         booking_date_time, self.schedule, self.booking_period
                     )
                 )
-                if (
-                    ReservationValidators.validate_hour_is_not_less_now(
-                        booking_date_time
-                    )
-                    is False
-                ):
-                    if ReservationValidators.validate_booking_time_is_not_forbidden(booking_date_time, validated_booking_time) is False:
-                        self.set_booking_date_time()
-                    else:
-                        return validated_booking_time
+                if validated_booking_time is False:
+                    self.set_booking_date_time()
+                else:
+
+                    if (
+                        ReservationValidators.validate_hour_is_not_less_now(
+                            booking_date_time
+                        )
+                        is False
+                    ):
+
+                        if (
+                            ReservationValidators.validate_booking_time_is_not_forbidden(
+                                booking_date_time, validated_booking_time
+                            )
+                            is None
+                        ):
+                            self.set_booking_date_time()
+                        else:
+                            return validated_booking_time
+
         else:
             self.set_booking_date_time()
-
 
     def set_book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")

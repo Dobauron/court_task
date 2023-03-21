@@ -39,12 +39,10 @@ class ReservationValidators:
             booking_date_time, schedule
         )
 
-        if not reserved_periods:
-            raise ValueError("No reservations found for the selected date")
-
         validated_booking_time = ReservationValidators.search_for_next_open_term(
             booking_date_time, reserved_periods, booking_period
         )
+
         if validated_booking_time[0] != booking_date_time.time():
             suggest_other_reservation = input(
                 f"The time you choose is unavailable,"
@@ -92,20 +90,23 @@ class ReservationValidators:
         booking_start_time = booking_date_time.time()
         booking_end = booking_date_time + booking_period
         booking_end_time = booking_end.time()
-        start_time_first_reservation = reserved_periods[0][0]
-        end_time_first_reservation = reserved_periods[0][1]
-        check_current_reservation = (
-            ReservationValidators.get_next_available_reservation_time(
-                start_time_first_reservation,
-                end_time_first_reservation,
-                reserved_periods,
-                booking_period,
-                booking_date_time,
-                booking_start_time,
-                booking_end_time,
+        try:
+            start_time_first_reservation = reserved_periods[0][0]
+            end_time_first_reservation = reserved_periods[0][1]
+            check_current_reservation = (
+                ReservationValidators.get_next_available_reservation_time(
+                    start_time_first_reservation,
+                    end_time_first_reservation,
+                    reserved_periods,
+                    booking_period,
+                    booking_date_time,
+                    booking_start_time,
+                    booking_end_time,
+                )
             )
-        )
-        return check_current_reservation
+            return check_current_reservation
+        except IndexError:
+            return booking_date_time, booking_end
 
     @staticmethod
     def get_next_available_reservation_time(
@@ -149,7 +150,6 @@ class ReservationValidators:
                     start_time_reserved_term <= next_booking_start_time
                     and next_reservation_start_time >= next_booking_end_time.time()
                 ):
-
                     new_booking_end_time = end_time_reserved_term + booking_period
 
                     return end_time_reserved_term.time(), new_booking_end_time.time()
@@ -167,14 +167,19 @@ class ReservationValidators:
             )
             return check_next_reservation
         except IndexError:
-            start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
-                booking_date_time, reserved_periods[-1][1]
-            )
-            end_time_reserved_term = start_time_reserved_term + booking_period
-            return start_time_reserved_term.time(), end_time_reserved_term.time()
+            if len(reserved_periods) == 0:
+                return booking_start_time, booking_end_time
+            else:
+                start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
+                    booking_date_time, reserved_periods[-1][1]
+                )
+                end_time_reserved_term = start_time_reserved_term + booking_period
+                return start_time_reserved_term.time(), end_time_reserved_term.time()
 
     @staticmethod
-    def validate_booking_time_is_not_forbidden(booking_date_time, validated_booking_time = None):
+    def validate_booking_time_is_not_forbidden(
+        booking_date_time, validated_booking_time=None
+    ):
         too_early = DateTimeConverter.convert_string_to_time("06:00")
         too_late = DateTimeConverter.convert_string_to_time("22:00")
         date_time_too_early = DateTimeConverter.convert_time_to_datetime(
@@ -185,30 +190,25 @@ class ReservationValidators:
         )
 
         if validated_booking_time is None:
-            print(1)
-            if (
-                booking_date_time < date_time_too_early
-                or booking_date_time > date_time_too_late
-            ):
-                print(
-                    "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
-                )
-                return
-            return False
+            booking_start_time = booking_date_time
+            booking_end_time = booking_date_time
         else:
-            print(2)
-            validated_booking_start_time = validated_booking_time[0]
-            validated_booking_end_time = validated_booking_time[1]
-            print(validated_booking_start_time)
-            print(validated_booking_end_time)
-            if (
-                validated_booking_start_time < date_time_too_early
-                or validated_booking_end_time > date_time_too_late
-            ):
-                print(
-                    "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
-                )
-                return False
+            booking_start_time = DateTimeConverter.convert_time_to_datetime(
+                booking_date_time, validated_booking_time[0]
+            )
+            booking_end_time = DateTimeConverter.convert_time_to_datetime(
+                booking_date_time, validated_booking_time[1]
+            )
+
+        if (
+            booking_start_time < date_time_too_early
+            or booking_end_time > date_time_too_late
+        ):
+            print(
+                "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
+            )
+            return
+        return False
 
     @staticmethod
     def validate_reservation_exist(
