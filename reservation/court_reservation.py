@@ -20,6 +20,11 @@ class Reservation:
         self.set_booking_date_time()
         self.set_than_save_reservation()
 
+    def cancel_reservation(self):
+        self.set_name()
+        self.set_cancel_reservation_date_time()
+        self.delete_reservation()
+
     def set_name(self):
         self.name = input("What's your Name?")
 
@@ -112,10 +117,6 @@ class Reservation:
             self.schedule[date_key] = [data]
         self.data_handler.save_reservation_in_json(date_key, data)
 
-    def cancel_reservation(self):
-        self.set_name()
-        self.set_cancel_reservation_date_time()
-        self.delete_reservation()
 
     def set_cancel_reservation_date_time(self):
         cancel_reservation = input(

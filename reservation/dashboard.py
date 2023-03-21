@@ -21,14 +21,13 @@ class Dashboard:
         return user_choice
 
     def main_loop(self):
-        try:
-            user_choice = self.user_choices()
-        except ValueError:
-            print("Your choice is unavailable, please enter proper choice")
-            user_choice = self.user_choices()
         reservation = Reservation(DataHandler("23.03-30.03.json"))
         while True:
-
+            try:
+                user_choice = self.user_choices()
+            except ValueError:
+                print("Your choice is unavailable, please enter proper choice")
+                user_choice = self.user_choices()
             if user_choice == 1:
                 reservation.setup_reservation()
             elif user_choice == 2:
