@@ -42,12 +42,12 @@ class ReservationValidators:
         validated_booking_time = ReservationValidators.search_for_next_open_term(
             booking_date_time, reserved_periods, booking_period
         )
-
-        if validated_booking_time[0] != booking_date_time.time():
+        validated_booking_start_time = validated_booking_time[0]
+        if validated_booking_start_time != booking_date_time.time():
             suggest_other_reservation = input(
                 f"The time you choose is unavailable,"
                 f" would you like to make a reservation for"
-                f" {validated_booking_time[0]} instead (yes/no)"
+                f" {validated_booking_start_time} instead (yes/no)"
             )
             if suggest_other_reservation == "yes":
                 return validated_booking_time
