@@ -9,8 +9,6 @@ class Reservation:
         self.booking_date_time = None
         self.booking_period = None
         self.validated_booking_time = None
-        self.cancel_reservation_date = None
-        self.cancel_reservation_time = None
         self.cancel_reservation_date_time = None
         self.schedule = data_handler.load_schedule()
         self.data_handler = data_handler
@@ -22,8 +20,7 @@ class Reservation:
 
     def cancel_reservation(self):
         self.set_name()
-        self.set_cancel_reservation_date_time()
-        self.delete_reservation()
+        self.set_cancel_reservation_date_time_then_delete()
 
     def set_name(self):
         self.name = input("What's your Name?")
@@ -42,7 +39,7 @@ class Reservation:
                     self.validated_booking_time = validation
                     self.booking_date_time = booking_date_time
                 else:
-                    self.booking_date_time()
+                    self.set_booking_date_time()
         except ValueError:
             print("Invalid date format, Please try again")
             self.set_booking_date_time()
@@ -130,33 +127,36 @@ class Reservation:
         except TypeError:
             print("validated_booking_time is propably None")
 
-    def set_cancel_reservation_date_time(self):
-        cancel_reservation = input(
-            "Please specify date and time for cancel your reservation {DD.MM.YYYY HH:MM} :"
-        )
+    def set_cancel_reservation_date_time_then_delete(self):
         try:
-            cancel_reservation_date_time = (
-                DateTimeConverter.convert_string_to_date_time(cancel_reservation)
-            )
-            cancel_reservation_time = DateTimeConverter.get_string_time(
-                cancel_reservation_date_time
-            )
-            cancel_reservation_date = DateTimeConverter.get_string_time(
-                cancel_reservation_date_time
-            )
-            self.cancel_reservation_date_time = cancel_reservation_date_time
-            self.cancel_reservation_date = cancel_reservation_date
-            self.cancel_reservation_time = cancel_reservation_time
+            while self.cancel_reservation_date_time is None:
+                cancel_reservation = input(
+                    "Please specify date and time for cancel your reservation {DD.MM.YYYY HH:MM}: "
+                )
+                cancel_reservation_date_time = (
+                    DateTimeConverter.convert_string_to_date_time(cancel_reservation)
+                )
+                cancel_reservation_time = DateTimeConverter.get_string_time(
+                    cancel_reservation_date_time
+                )
+                cancel_reservation_date = DateTimeConverter.get_string_date(
+                    cancel_reservation_date_time
+                )
+                self.cancel_reservation_date_time = cancel_reservation_date_time
+                self.delete_reservation(cancel_reservation_date, cancel_reservation_time)
         except ValueError:
             print("Invalid date format, Please try again")
-            self.set_cancel_reservation_date_time()
+            self.set_cancel_reservation_date_time_then_delete()
+        finally:
+            self.cancel_reservation_date_time = None
 
-    def delete_reservation(self):
+
+    def delete_reservation(self, cancel_reservation_date, cancel_reservation_time):
         reservation_to_cancel_index = ReservationValidators.validate_reservation_exist(
             self.name,
             self.schedule,
-            self.cancel_reservation_date,
-            self.cancel_reservation_time,
+            cancel_reservation_date,
+            cancel_reservation_time,
         )
         if (
             reservation_to_cancel_index is not False
@@ -165,12 +165,12 @@ class Reservation:
             )
             is False
         ):
-            del self.schedule[self.cancel_reservation_date][reservation_to_cancel_index]
+            del self.schedule[cancel_reservation_date][reservation_to_cancel_index]
+            print("Specified reservation was deleted from schedule")
         else:
             print("There is no reservation with specified data")
-            self.cancel_reservation()
+            return
 
-        self.cancel_reservation()
 
     def show_schedule(self):
         try:
@@ -213,7 +213,7 @@ class Reservation:
                         date_reservation_specified_by_user[date_str] = [data]
 
         file_type = input("Specify, how would you like to save data (json/csv): ")
-        filename = input("Specify, how file should be named")
+        filename = input("Specify, how file should be named: ")
         if file_type == "csv":
             self.data_handler.save_schedule_in_csv(
                 filename + ".csv", date_reservation_specified_by_user
