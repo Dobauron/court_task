@@ -26,7 +26,7 @@ class Dashboard:
             try:
                 user_choice = self.user_choices()
             except ValueError:
-                print("Your choice is unavailable, please enter proper choice")
+                print("Your choice is unavailable, please enter one of the following")
                 user_choice = self.user_choices()
             if user_choice == 1:
                 reservation.setup_reservation()

@@ -1,6 +1,6 @@
 import datetime
 from validators import ReservationValidators
-from date_time_converter import DateTimeConverter
+from converters import DateTimeConverter
 
 
 class Reservation:
@@ -29,18 +29,25 @@ class Reservation:
         self.name = input("What's your Name?")
 
     def set_booking_date_time(self):
-        booking_date_time_str = input("When would you like to book? {DD.MM.YYYY HH:MM}")
         try:
-            booking_date_time = DateTimeConverter.convert_string_to_date_time(
-                booking_date_time_str
-            )
-            validation = self.validate_reservation(booking_date_time)
-            if validation is not False:
-                self.validated_booking_time = validation
-                self.booking_date_time = booking_date_time
+            while self.validated_booking_time is None:
+                booking_date_time_str = input(
+                    "When would you like to book? {DD.MM.YYYY HH:MM}"
+                )
+                booking_date_time = DateTimeConverter.convert_string_to_date_time(
+                    booking_date_time_str
+                )
+                validation = self.validate_reservation(booking_date_time)
+                if validation is not False:
+                    self.validated_booking_time = validation
+                    self.booking_date_time = booking_date_time
+                else:
+                    self.booking_date_time()
         except ValueError:
             print("Invalid date format, Please try again")
             self.set_booking_date_time()
+        except TypeError:
+            print("500", f"validated_booking_time is {self.validated_booking_time}\n")
 
     def validate_reservation(self, booking_date_time):
         if (
@@ -62,28 +69,31 @@ class Reservation:
                     )
                 )
                 if validated_booking_time is False:
-                    self.set_booking_date_time()
+                    return
                 else:
-
                     if (
                         ReservationValidators.validate_hour_is_not_less_now(
                             booking_date_time
                         )
                         is False
                     ):
-
                         if (
                             ReservationValidators.validate_booking_time_is_not_forbidden(
-                                booking_date_time, validated_booking_time
+                                booking_date_time,
+                                validated_booking_time=validated_booking_time,
                             )
                             is None
                         ):
-                            self.set_booking_date_time()
+                            return
+
                         else:
                             return validated_booking_time
-
+                    else:
+                        return
+            else:
+                return
         else:
-            self.set_booking_date_time()
+            return
 
     def set_book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
@@ -99,27 +109,30 @@ class Reservation:
             self.set_book_reservation_period()
 
     def set_than_save_reservation(self):
-        validated_new_booking_start_time = self.validated_booking_time[0]
-        validated_new_booking_end_time = self.validated_booking_time[1]
-        data = {
-            "name": self.name,
-            "start_time": DateTimeConverter.get_string_time(
-                validated_new_booking_start_time
-            ),
-            "end_time": DateTimeConverter.get_string_time(
-                validated_new_booking_end_time
-            ),
-        }
-        date_key = DateTimeConverter.get_string_date(self.booking_date_time)
-        if date_key in self.schedule:
-            self.schedule[date_key].append(data)
-        else:
-            self.schedule[date_key] = [data]
-        self.save_to_file()
+        try:
+            validated_new_booking_start_time = self.validated_booking_time[0]
+            validated_new_booking_end_time = self.validated_booking_time[1]
+            data = {
+                "name": self.name,
+                "start_time": DateTimeConverter.get_string_time(
+                    validated_new_booking_start_time
+                ),
+                "end_time": DateTimeConverter.get_string_time(
+                    validated_new_booking_end_time
+                ),
+            }
+            date_key = DateTimeConverter.get_string_date(self.booking_date_time)
+            if date_key in self.schedule:
+                self.schedule[date_key].append(data)
+            else:
+                self.schedule[date_key] = [data]
+            # Save to database - sqllite
+        except TypeError:
+            print("validated_booking_time is propably None")
 
     def set_cancel_reservation_date_time(self):
         cancel_reservation = input(
-            "Please provide date and time for cancel your reservation {DD.MM.YYYY HH:MM} :"
+            "Please specify date and time for cancel your reservation {DD.MM.YYYY HH:MM} :"
         )
         try:
             cancel_reservation_date_time = (
@@ -181,38 +194,6 @@ class Reservation:
             print("Invalid date format, Please try again")
             self.show_schedule()
 
-    @staticmethod
-    def name_day_in_schedule(date):
-        day_name = DateTimeConverter.get_day_name(date)
-        today = datetime.datetime.today().date()
-        tomorrow = today + datetime.timedelta(days=1)
-        yesterday = today - datetime.timedelta(days=1)
-        if date == today:
-            return "Today"
-        elif date == tomorrow:
-            return "Tomorrow"
-        elif date == yesterday:
-            return "Yesterday"
-        else:
-            return day_name
-
-    @staticmethod
-    def get_all_day_user_specify_range():
-        start_date = input(
-            "Please specify from which date you want to print/save the booking {DD.MM.YYYY}: "
-        )
-        end_date = input(
-            "Please specify until which date you want to print/save the booking {DD.MM.YYYY}: "
-        )
-        start_date = DateTimeConverter.convert_string_to_date(start_date)
-        end_date = DateTimeConverter.convert_string_to_date(end_date)
-        all_dates = []
-        current_date = start_date
-        while current_date <= end_date:
-            all_dates.append(current_date)
-            current_date += datetime.timedelta(days=1)
-        return all_dates
-
     def save_to_file(self):
         range_date = self.get_all_day_user_specify_range()
         date_reservation_specified_by_user = {}
@@ -244,3 +225,35 @@ class Reservation:
         else:
             print("You have to choose json or csv")
             self.save_to_file()
+
+    @staticmethod
+    def name_day_in_schedule(date):
+        day_name = DateTimeConverter.get_day_name(date)
+        today = datetime.datetime.today().date()
+        tomorrow = today + datetime.timedelta(days=1)
+        yesterday = today - datetime.timedelta(days=1)
+        if date == today:
+            return "Today"
+        elif date == tomorrow:
+            return "Tomorrow"
+        elif date == yesterday:
+            return "Yesterday"
+        else:
+            return day_name
+
+    @staticmethod
+    def get_all_day_user_specify_range():
+        start_date = input(
+            "Please specify from which date you want to print/save the booking {DD.MM.YYYY}: "
+        )
+        end_date = input(
+            "Please specify until which date you want to print/save the booking {DD.MM.YYYY}: "
+        )
+        start_date = DateTimeConverter.convert_string_to_date(start_date)
+        end_date = DateTimeConverter.convert_string_to_date(end_date)
+        all_dates = []
+        current_date = start_date
+        while current_date <= end_date:
+            all_dates.append(current_date)
+            current_date += datetime.timedelta(days=1)
+        return all_dates

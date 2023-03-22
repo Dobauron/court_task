@@ -1,6 +1,6 @@
 import datetime
 from filters import search_current_week
-from date_time_converter import DateTimeConverter
+from converters import DateTimeConverter
 
 
 class ReservationValidators:
@@ -40,8 +40,9 @@ class ReservationValidators:
         validated_booking_time = ReservationValidators.search_for_next_open_term(
             booking_date_time, reserved_periods, booking_period
         )
+        print(validated_booking_time, booking_date_time)
         validated_booking_start_time = validated_booking_time[0]
-        if validated_booking_start_time != booking_date_time.time():
+        if validated_booking_start_time != booking_date_time:
             suggest_other_reservation = input(
                 f"The time you choose is unavailable,"
                 f" would you like to make a reservation for"
@@ -170,7 +171,7 @@ class ReservationValidators:
                     booking_date_time, reserved_periods[-1][1]
                 )
                 end_time_reserved_term = start_time_reserved_term + booking_period
-                return start_time_reserved_term.time(), end_time_reserved_term.time()
+                return start_time_reserved_term, end_time_reserved_term
 
     @staticmethod
     def validate_booking_time_is_not_forbidden(
