@@ -4,9 +4,42 @@ from converters import DateTimeConverter
 
 
 class ReservationValidators:
+    """class ReservationValidators:
+    A collection of static methods to validate reservations made by users.
+
+    Methods:
+    ---------
+    validate_number_of_reservation_per_week(booking_date_time, name, schedule)
+        Validate that user is not making reservation more than two times per week.
+
+    validate_hour_is_not_less_now(booking_time)
+        Validate that reservation time is at least one hour ahead of the current time.
+
+    validate_hour_is_bookable_for_chosen_day(booking_date_time, schedule, booking_period)
+        Validate that the chosen time slot for the booking is available on the selected day.
+
+    create_schedule_list(booking_date_time, schedule)
+        Create a list of reserved periods for user chosen date.
+
+    search_for_next_open_term(booking_date_time, reserved_periods, booking_period)
+        Search for the next available reservation time slot given the current reservation period.
+
+    get_next_available_reservation_time(start_time_reserved_term, end_time_reserved_term, reserved_periods,
+        booking_period, booking_date_time, booking_start_time, booking_end_time)
+        Recursively search for the next available reservation time slot given the current reservation period.
+
+    validate_booking_time_is_not_forbidden(booking_date_time, validated_booking_time=None)
+        Check if the specified booking time is between 06:00 - 22:00
+
+    validate_reservation_exist(name, schedule, cancel_reservation_date, cancel_reservation_time)
+        Check if a reservation exists
+
+    validate_reservation_exist(name, schedule, cancel_reservation_date, cancel_reservation_time)
+
+    All methods are static and don't require an instance of the class to be created."""
+
     @staticmethod
     def validate_number_of_reservation_per_week(booking_date_time, name, schedule):
-        """Validate that user is not making reservation more than two time per week"""
         user_reservation_current_week = 0
         current_week = search_current_week(booking_date_time)
         for day in current_week:
@@ -33,6 +66,28 @@ class ReservationValidators:
     def validate_hour_is_bookable_for_chosen_day(
         booking_date_time, schedule, booking_period
     ):
+        """
+        Validates whether a booking time slot is available for the given `booking_date_time`
+        by checking the `schedule` of existing reservations. If the requested time slot is not
+        available, the method suggests the next available time slot and asks the user to confirm
+        the booking.
+
+        Args:
+            booking_date_time (datetime.datetime): The desired booking date and time.
+            schedule (Dict[str, List[Dict[str, str]]]): A dictionary containing the schedules
+                of different users. Each key represents a date in the format "YYYY-MM-DD", and
+                the corresponding value is a list of dictionaries containing information about
+                the reservations made by that user on that day.
+            booking_period (datetime.timedelta): The duration of the booking.
+
+        Returns:
+            Union[Tuple[datetime.time, datetime.time], bool]: If the requested time slot is
+            available, the method returns a tuple containing the start and end times of the
+            booking. If the requested time slot is not available and the user chooses to make
+            a reservation for the suggested time slot, the method returns a tuple containing
+            the start and end times of the suggested booking. If the user chooses not to make
+            a reservation for the suggested time slot, the method returns False.
+        """
         reserved_periods = ReservationValidators.create_schedule_list(
             booking_date_time, schedule
         )
@@ -40,7 +95,6 @@ class ReservationValidators:
         validated_booking_time = ReservationValidators.search_for_next_open_term(
             booking_date_time, reserved_periods, booking_period
         )
-        print(validated_booking_time, booking_date_time)
         validated_booking_start_time = validated_booking_time[0]
         if validated_booking_start_time != booking_date_time:
             suggest_other_reservation = input(
@@ -63,6 +117,20 @@ class ReservationValidators:
 
     @staticmethod
     def create_schedule_list(booking_date_time, schedule):
+        """
+        Create a list of reserved periods for a given date in the schedule.
+
+        Args:
+        - booking_date_time (datetime.datetime): The datetime for which to retrieve the reserved periods.
+        - schedule (dict): A dictionary representing the schedule of reservations, where each key is a date string
+                           (in the format "YYYY-MM-DD"), and each value is a list of dictionaries, where each dictionary
+                           represents a reservation and contains the keys "name", "start_time", and "end_time".
+
+        Returns:
+        - A list of tuples, where each tuple represents a reserved period and contains two datetime.time objects
+          representing the start and end times of the period, respectively. The list is sorted in ascending order
+          of start times.
+        """
         reserved_periods = []
         for date, user_reservation in schedule.items():
 
@@ -84,6 +152,18 @@ class ReservationValidators:
 
     @staticmethod
     def search_for_next_open_term(booking_date_time, reserved_periods, booking_period):
+        """
+        Finds the next available time slot for a booking based on the provided booking date and time,
+        a list of already reserved time periods, and the duration of the booking.
+
+        Args:
+            booking_date_time (datetime.datetime): The date and time of the booking.
+            reserved_periods (list): A list of tuples representing already reserved time periods, where each tuple contains the start and end times.
+            booking_period (datetime.timedelta): The duration of the booking.
+
+        Returns:
+            tuple: A tuple containing the start and end times of the next available time slot for the booking.
+        """
         booking_start_time = booking_date_time.time()
         booking_end = booking_date_time + booking_period
         booking_end_time = booking_end.time()
@@ -115,6 +195,24 @@ class ReservationValidators:
         booking_start_time,
         booking_end_time,
     ):
+        """
+            Finds the next available reservation time for a booking given a list of already reserved periods.
+
+        Args:
+            start_time_reserved_term (datetime.time): The start time of the current reserved period.
+            end_time_reserved_term (datetime.time): The end time of the current reserved period.
+            reserved_periods (list): A list of tuples representing already reserved periods, where each tuple contains
+                                     the start and end times of the reservation as datetime.time objects.
+            booking_period (datetime.timedelta): The length of a reservation period.
+            booking_date_time (datetime.datetime): The date and time of the booking as a datetime object.
+            booking_start_time (datetime.time): The desired start time of the booking.
+            booking_end_time (datetime.time): The desired end time of the booking.
+
+        Returns:
+            A tuple with the start and end time of the next available reservation period as datetime.time objects.
+            If no available reservation is found, returns the start and end time of the last reserved period plus
+            the booking period, or the original booking start and end times if there are no reserved periods.
+        """
         try:
 
             index_current_reservation = reserved_periods.index(
@@ -177,6 +275,18 @@ class ReservationValidators:
     def validate_booking_time_is_not_forbidden(
         booking_date_time, validated_booking_time=None
     ):
+        """
+        Check if the specified booking time is allowed.
+
+        Args:
+            booking_date_time (datetime.datetime): The start time of the booking.
+            validated_booking_time (tuple, optional): A tuple containing the start and end time
+                of the booking, if already validated. Defaults to None.
+
+        Returns:
+            bool: False if the booking time is allowed, otherwise None.
+
+        """
         too_early = DateTimeConverter.convert_string_to_time("06:00")
         too_late = DateTimeConverter.convert_string_to_time("22:00")
         date_time_too_early = DateTimeConverter.convert_time_to_datetime(
@@ -207,6 +317,19 @@ class ReservationValidators:
     def validate_reservation_exist(
         name, schedule, cancel_reservation_date, cancel_reservation_time
     ):
+        """
+        Check if a reservation exists.
+
+        Args:
+            name (str): The name associated with the reservation.
+            schedule (dict): A dictionary containing reservation data.
+            cancel_reservation_date (str): The date of the reservation to cancel.
+            cancel_reservation_time (str): The start time of the reservation to cancel.
+
+        Returns:
+            int: The index of the reservation to cancel, if found. False otherwise.
+
+        """
         for date, list_reservation in schedule.items():
             if date == cancel_reservation_date:
                 reservation_to_cancel_index = 0

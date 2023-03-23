@@ -4,6 +4,42 @@ from converters import DateTimeConverter
 
 
 class Reservation:
+    """
+    A class representing a reservation of a court. It allows the user to create a reservation and save it to a schedule,
+        cancel a previously made reservation, print schedule, and save it to the file.
+
+    Attributes:
+    -----------
+        name (str): the name of the person who made the reservation
+        booking_date_time (datetime.datetime): the date and time when the reservation starts
+        booking_period (datetime.timedelta): the length of the reservation
+        validated_booking_time (tuple): a tuple containing the start and end time of the validated booking
+        cancel_reservation_date_time (datetime.datetime): the date and time when the reservation is canceled
+        schedule (dict): a dictionary containing the reservations for each day, keyed by date
+        data_handler: an object responsible for loading and saving the schedule to the file
+
+    Methods:
+    ---------
+        setup_reservation(): allows the user to set up a reservation
+        cancel_reservation(): allows the user to cancel a reservation
+        set_name(): sets the name of the person making the reservation
+        set_booking_date_time(): allows the user to set the date and time of the reservation
+        validate_reservation(): validates the date and time of the reservation and returns the validated booking time if
+            valid
+        set_book_reservation_period(): allows the user to set the length of the reservation
+        set_than_save_reservation(): saves the validated reservation to the schedule
+        set_cancel_reservation_date_time_then_delete(): allows the user to set the date and time of the reservation to
+            cancel, and deletes the corresponding reservation from the schedule
+        delete_reservation(): deletes a reservation from the schedule
+        show_schedule(): shows the schedule for a specified range of dates
+        save_schedule_to_file(): saves the reservation schedule for a user-specified date range to a file in either
+            JSON or CSV format.
+        name_day_in_schedule() : Returns the name of a day in the reservation schedule based on a given date.
+            If the date is today, tomorrow or yesterday, returns the corresponding name.
+        def get_all_day_user_specify_range() : Prompts the user to input a start and end date and returns
+            a list of all dates within that range.
+    """
+
     def __init__(self, data_handler):
         self.name = None
         self.booking_date_time = None
@@ -47,6 +83,22 @@ class Reservation:
             print("500", f"validated_booking_time is {self.validated_booking_time}\n")
 
     def validate_reservation(self, booking_date_time):
+        """
+        Validates the date and time of the reservation based on various criteria, such as whether the chosen time
+        is not forbidden, whether the user has not exceeded the maximum number of reservations per week, and whether
+        the chosen time is available for booking.
+
+        Parameters:
+        -----------
+        booking_date_time: datetime.datetime
+            The date and time of the reservation.
+
+        Returns:
+        --------
+        validated_booking_time: tuple or None
+            A tuple containing the start and end time of the validated booking if the reservation is valid,
+            or None otherwise.
+        """
         if (
             ReservationValidators.validate_booking_time_is_not_forbidden(
                 booking_date_time
@@ -85,12 +137,6 @@ class Reservation:
 
                         else:
                             return validated_booking_time
-                    else:
-                        return
-            else:
-                return
-        else:
-            return
 
     def set_book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
@@ -123,9 +169,11 @@ class Reservation:
                 self.schedule[date_key].append(data)
             else:
                 self.schedule[date_key] = [data]
-            # Save to database - sqllite
+            print("Your reservation is successfully added to schedule")
         except TypeError:
             print("validated_booking_time is propably None")
+        finally:
+            self.validated_booking_time = None
 
     def set_cancel_reservation_date_time_then_delete(self):
         try:
@@ -143,13 +191,14 @@ class Reservation:
                     cancel_reservation_date_time
                 )
                 self.cancel_reservation_date_time = cancel_reservation_date_time
-                self.delete_reservation(cancel_reservation_date, cancel_reservation_time)
+                self.delete_reservation(
+                    cancel_reservation_date, cancel_reservation_time
+                )
         except ValueError:
             print("Invalid date format, Please try again")
             self.set_cancel_reservation_date_time_then_delete()
         finally:
             self.cancel_reservation_date_time = None
-
 
     def delete_reservation(self, cancel_reservation_date, cancel_reservation_time):
         reservation_to_cancel_index = ReservationValidators.validate_reservation_exist(
@@ -170,7 +219,6 @@ class Reservation:
         else:
             print("There is no reservation with specified data")
             return
-
 
     def show_schedule(self):
         try:
@@ -194,7 +242,7 @@ class Reservation:
             print("Invalid date format, Please try again")
             self.show_schedule()
 
-    def save_to_file(self):
+    def save_schedule_to_file(self):
         range_date = self.get_all_day_user_specify_range()
         date_reservation_specified_by_user = {}
         for date in range_date:
@@ -224,7 +272,7 @@ class Reservation:
             )
         else:
             print("You have to choose json or csv")
-            self.save_to_file()
+            self.save_schedule_to_file()
 
     @staticmethod
     def name_day_in_schedule(date):
@@ -244,10 +292,10 @@ class Reservation:
     @staticmethod
     def get_all_day_user_specify_range():
         start_date = input(
-            "Please specify from which date you want to print/save the booking {DD.MM.YYYY}: "
+            "Please specify from which date you want to print/save schedule {DD.MM.YYYY}: "
         )
         end_date = input(
-            "Please specify until which date you want to print/save the booking {DD.MM.YYYY}: "
+            "Please specify until which date you want to print/save schedule {DD.MM.YYYY}: "
         )
         start_date = DateTimeConverter.convert_string_to_date(start_date)
         end_date = DateTimeConverter.convert_string_to_date(end_date)
