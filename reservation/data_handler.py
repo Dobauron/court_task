@@ -3,42 +3,17 @@ from converters import DateTimeConverter
 
 
 class DataHandler:
-    def __init__(self, filename):
+    def __init__(self):
         """
         Initializes a DataHandler object with the specified filename and an empty schedule dictionary.
         """
-        self.filename = filename
         self.schedule = {}
-
-    def save_schedule(self, data):
-        """
-        Saves the schedule data to the JSON file specified by the filename attribute.
-        """
-        with open(self.filename, "w") as file:
-            json.dump(data, file)
-
-    def load_schedule(self):
-        """
-        Loads the schedule data from the JSON file specified by the filename attribute and returns it.
-        """
-        with open(self.filename, "r") as file:
-            self.schedule = json.load(file)
-        return self.schedule
 
     def save_schedule_in_json(self, filename, date_reservation_specified_by_user):
         """
         Saves the reservation data to the JSON file under the specified date key.
         """
-
-        # with open(self.filename, "r") as f:
-        #     self.schedule = json.load(f)
-        # if date_key in self.schedule:
-        #     self.schedule[date_key].append(data)
-        # else:
-        #     self.schedule[date_key] = [data]
-
         self.sort_before_save(date_reservation_specified_by_user)
-
         with open(filename, "w") as f:
             json.dump(date_reservation_specified_by_user, f, indent=4)
 

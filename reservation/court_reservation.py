@@ -46,7 +46,7 @@ class Reservation:
         self.booking_period = None
         self.validated_booking_time = None
         self.cancel_reservation_date_time = None
-        self.schedule = data_handler.load_schedule()
+        self.schedule = {}
         self.data_handler = data_handler
 
     def setup_reservation(self):

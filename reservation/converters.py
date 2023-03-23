@@ -2,6 +2,21 @@ import datetime
 
 
 class DateTimeConverter:
+    """A utility class for converting datetime objects and strings.
+
+    This class provides a set of static methods for converting datetime objects to various string formats,
+    and for converting string representations of dates and times to datetime objects.
+
+    Static methods:
+    - convert_string_to_date(string_date): Convert a string representation of a date to a datetime.date object.
+    - convert_string_to_time(string_time): Convert a string representation of a time to a datetime.time object.
+    - convert_string_to_date_time(string_date_time): Convert a string representation of a datetime to a datetime.datetime object.
+    - get_string_time(date_time): Convert a datetime object to a string representation of the time in format HH:MM.
+    - get_string_date(date_time): Convert a datetime object to a string representation of the date in format DD.MM.YYYY.
+    - convert_time_to_datetime(date, time_to_convert): Convert a date and a time to a datetime.datetime object.
+    - get_day_name(date): Get the name of the day for a given date, e.g. "Monday", "Tuesday", etc.
+    """
+
     @staticmethod
     def convert_string_to_date(string_date):
         date = datetime.datetime.strptime(string_date, "%d.%m.%Y").date()

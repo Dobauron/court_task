@@ -21,7 +21,7 @@ class Dashboard:
         return user_choice
 
     def main_loop(self):
-        reservation = Reservation(DataHandler("23.03-30.03.json"))
+        reservation = Reservation(DataHandler())
         while True:
             try:
                 user_choice = self.user_choices()
@@ -35,7 +35,7 @@ class Dashboard:
             elif user_choice == 3:
                 reservation.show_schedule()
             elif user_choice == 4:
-                reservation.save_to_file()
+                reservation.save_schedule_to_file()
             elif user_choice == 5:
                 break
             elif user_choice > 5:

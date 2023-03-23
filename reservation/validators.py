@@ -36,7 +36,8 @@ class ReservationValidators:
 
     validate_reservation_exist(name, schedule, cancel_reservation_date, cancel_reservation_time)
 
-    All methods are static and don't require an instance of the class to be created."""
+    All methods are static and don't require an instance of the class to be created.
+    """
 
     @staticmethod
     def validate_number_of_reservation_per_week(booking_date_time, name, schedule):
