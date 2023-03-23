@@ -10,4 +10,6 @@
 - to remove dependency:
 > `poetry remove <some_package>`
 - to show all package
-> `poetry show `
+> `poetry show`
+- run script
+> poetry run python reservation/dashboard.py
