@@ -74,7 +74,6 @@ class TestCourtReservation(unittest.TestCase):
             self.reservation.set_booking_date_time()
         self.assertEqual(self.reservation.booking_date_time, expected_booking_date_time)
 
-
     def test_validate_reservation_hour_is_not_less_now(self):
         booking_date_time = datetime.datetime.now() - datetime.timedelta(hours=1)
         self.assertEqual(self.reservation.validate_reservation(booking_date_time), None)
@@ -97,7 +96,10 @@ class TestReservationValidators(unittest.TestCase):
 
         # Call the method and check the output
         self.assertFalse(
-            ReservationValidators.validate_number_of_reservation_per_week(booking_date_time, name, schedule))
+            ReservationValidators.validate_number_of_reservation_per_week(
+                booking_date_time, name, schedule
+            )
+        )
 
     def test_validate_number_of_reservation_per_week_with_invalid_input(self):
         booking_date_time = datetime.datetime(2023, 4, 1, 10, 0, 0)
@@ -113,15 +115,22 @@ class TestReservationValidators(unittest.TestCase):
         }
 
         self.assertIsNone(
-            ReservationValidators.validate_number_of_reservation_per_week(booking_date_time, name, schedule))
+            ReservationValidators.validate_number_of_reservation_per_week(
+                booking_date_time, name, schedule
+            )
+        )
 
     def test_validate_hour_is_not_less_now_with_valid_input(self):
         booking_time = datetime.datetime.now() + datetime.timedelta(hours=2)
-        self.assertFalse(ReservationValidators.validate_hour_is_not_less_now(booking_time))
+        self.assertFalse(
+            ReservationValidators.validate_hour_is_not_less_now(booking_time)
+        )
 
     def test_validate_hour_is_not_less_now_with_invalid_input(self):
         booking_time = datetime.datetime.now() + datetime.timedelta(minutes=30)
-        self.assertIsNone(ReservationValidators.validate_hour_is_not_less_now(booking_time))
+        self.assertIsNone(
+            ReservationValidators.validate_hour_is_not_less_now(booking_time)
+        )
 
 
 if __name__ == "__main__":

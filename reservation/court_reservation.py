@@ -75,7 +75,9 @@ class Reservation:
                     self.validated_booking_time = validation
                     self.booking_date_time = booking_date_time
                 elif validation is None:
-                    print('Probably there is no more free term this day, try to book another day')
+                    print(
+                        "Probably there is no more free term this day, try to book another day"
+                    )
                     self.set_booking_date_time()
         except ValueError:
             print("Invalid date format, Please try again")
@@ -105,39 +107,34 @@ class Reservation:
                 booking_date_time
             )
             is False
+            and ReservationValidators.validate_number_of_reservation_per_week(
+                booking_date_time, self.name, self.schedule
+            )
+            is False
+            and ReservationValidators.validate_hour_is_not_less_now(
+                        booking_date_time
+            )
         ):
-            if (
-                ReservationValidators.validate_number_of_reservation_per_week(
-                    booking_date_time, self.name, self.schedule
+            self.set_book_reservation_period()
+            validated_booking_time = (
+                ReservationValidators.validate_hour_is_bookable_for_chosen_day(
+                    booking_date_time, self.schedule, self.booking_period
                 )
-                is False
-            ):
-                self.set_book_reservation_period()
-                validated_booking_time = (
-                    ReservationValidators.validate_hour_is_bookable_for_chosen_day(
-                        booking_date_time, self.schedule, self.booking_period
+            )
+            if validated_booking_time is False:
+                return
+            else:
+                if (
+                    ReservationValidators.validate_booking_time_is_not_forbidden(
+                        booking_date_time,
+                        validated_booking_time=validated_booking_time,
                     )
-                )
-                if validated_booking_time is False:
+                    is None
+                ):
                     return
-                else:
-                    if (
-                        ReservationValidators.validate_hour_is_not_less_now(
-                            booking_date_time
-                        )
-                        is False
-                    ):
-                        if (
-                            ReservationValidators.validate_booking_time_is_not_forbidden(
-                                booking_date_time,
-                                validated_booking_time=validated_booking_time,
-                            )
-                            is None
-                        ):
-                            return
 
-                        else:
-                            return validated_booking_time
+                else:
+                    return validated_booking_time
 
     def set_book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
@@ -180,7 +177,7 @@ class Reservation:
         try:
             while self.cancel_reservation_date_time is None:
                 cancel_reservation = input(
-                    "Please specify date and time for cancel your reservation {DD.MM.YYYY HH:MM}: "
+                    "Please specify date and time to cancel your reservation {DD.MM.YYYY HH:MM}: "
                 )
                 cancel_reservation_date_time = (
                     DateTimeConverter.convert_string_to_date_time(cancel_reservation)
