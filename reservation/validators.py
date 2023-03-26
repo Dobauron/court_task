@@ -18,25 +18,24 @@ class ReservationValidators:
     validate_hour_is_bookable_for_chosen_day(booking_date_time, schedule, booking_period)
         Validate that the chosen time slot for the booking is available on the selected day.
 
-    create_schedule_list(booking_date_time, schedule)
+    create_reserved_periods_list(booking_date_time, schedule)
         Create a list of reserved periods for user chosen date.
+
+    create_free_periods_list(reserved_periods):
+        Resets the schedule and creates a list of free periods given a list of reserved periods.
 
     search_for_next_open_term(booking_date_time, reserved_periods, booking_period)
         Search for the next available reservation time slot given the current reservation period.
 
-    get_next_available_reservation_time(start_time_reserved_term, end_time_reserved_term, reserved_periods,
-        booking_period, booking_date_time, booking_start_time, booking_end_time)
-        Recursively search for the next available reservation time slot given the current reservation period.
+    search_next_bookable_term(free_periods, booking_period, booking_date_time, booking_start_time, booking_end_time)
+        Searches for the next bookable period given a list of free periods, a booking period,
+         and a booking start and end time.
 
     validate_booking_time_is_not_forbidden(booking_date_time, validated_booking_time=None)
         Check if the specified booking time is between 06:00 - 22:00
 
     validate_reservation_exist(name, schedule, cancel_reservation_date, cancel_reservation_time)
         Check if a reservation exists
-
-    validate_reservation_exist(name, schedule, cancel_reservation_date, cancel_reservation_time)
-
-    All methods are static and don't require an instance of the class to be created.
     """
 
     @staticmethod
@@ -122,15 +121,15 @@ class ReservationValidators:
         Create a list of reserved periods for a given date in the schedule.
 
         Args:
-        - booking_date_time (datetime.datetime): The datetime for which to retrieve the reserved periods.
-        - schedule (dict): A dictionary representing the schedule of reservations, where each key is a date string
+            booking_date_time (datetime.datetime): The datetime for which to retrieve the reserved periods.
+            schedule (dict): A dictionary representing the schedule of reservations, where each key is a date string
                            (in the format "YYYY-MM-DD"), and each value is a list of dictionaries, where each dictionary
                            represents a reservation and contains the keys "name", "start_time", and "end_time".
 
         Returns:
-        - A list of tuples, where each tuple represents a reserved period and contains two datetime.time objects
-          representing the start and end times of the period, respectively. The list is sorted in ascending order
-          of start times.
+            A list of tuples, where each tuple represents a reserved period and contains two datetime.time objects
+            representing the start and end times of the period, respectively. The list is sorted in ascending order
+            of start times.
         """
         reserved_periods = []
         for date, user_reservation in schedule.items():
