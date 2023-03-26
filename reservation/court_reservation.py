@@ -74,7 +74,7 @@ class Reservation:
                 if validation is not False:
                     self.validated_booking_time = validation
                     self.booking_date_time = booking_date_time
-                else:
+                elif validation is None:
                     self.set_booking_date_time()
         except ValueError:
             print("Invalid date format, Please try again")
@@ -120,12 +120,14 @@ class Reservation:
                 if validated_booking_time is False:
                     return
                 else:
+
                     if (
                         ReservationValidators.validate_hour_is_not_less_now(
                             booking_date_time
                         )
                         is False
                     ):
+
                         if (
                             ReservationValidators.validate_booking_time_is_not_forbidden(
                                 booking_date_time,
@@ -133,14 +135,16 @@ class Reservation:
                             )
                             is None
                         ):
+
                             return
 
                         else:
                             return validated_booking_time
 
+
     def set_book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
-        chosen_period = int(input("How long would you like to book court?"))
+        chosen_period = int(input("How long would you like to book court?: "))
         if chosen_period == 1:
             self.booking_period = datetime.timedelta(minutes=30)
         elif chosen_period == 2:
@@ -169,7 +173,7 @@ class Reservation:
                 self.schedule[date_key].append(data)
             else:
                 self.schedule[date_key] = [data]
-            print("Your reservation is successfully added to schedule")
+            print("Your reservation has been successfully added to schedule")
         except TypeError:
             print("validated_booking_time is propably None")
         finally:

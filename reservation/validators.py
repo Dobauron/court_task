@@ -65,7 +65,7 @@ class ReservationValidators:
 
     @staticmethod
     def validate_hour_is_bookable_for_chosen_day(
-        booking_date_time, schedule, booking_period
+            booking_date_time, schedule, booking_period
     ):
         """
         Validates whether a booking time slot is available for the given `booking_date_time`
@@ -89,12 +89,12 @@ class ReservationValidators:
             the start and end times of the suggested booking. If the user chooses not to make
             a reservation for the suggested time slot, the method returns False.
         """
-        reserved_periods = ReservationValidators.create_schedule_list(
+        free_periods = ReservationValidators.create_schedule_list(
             booking_date_time, schedule
         )
 
         validated_booking_time = ReservationValidators.search_for_next_open_term(
-            booking_date_time, reserved_periods, booking_period
+            booking_date_time, free_periods, booking_period
         )
         validated_booking_start_time = validated_booking_time[0]
         if validated_booking_start_time != booking_date_time:
@@ -149,33 +149,58 @@ class ReservationValidators:
 
         else:
             reserved_periods.sort()
-            return reserved_periods
+            return ReservationValidators.reset_create_schedule_list(reserved_periods)
 
     @staticmethod
-    def search_for_next_open_term(booking_date_time, reserved_periods, booking_period):
+    def reset_create_schedule_list(reserved_periods):
+        new_free_periods = []
+        open_time_start = DateTimeConverter.convert_string_to_time("06:00")
+        closed_time_start = DateTimeConverter.convert_string_to_time("22:00")
+        try:
+            new_free_periods.append((open_time_start, reserved_periods[0][0]))
+            new_free_periods.append((reserved_periods[-1][1], closed_time_start))
+
+            for reservation_index in range(len(reserved_periods)):
+                new_free_periods.append(
+                    (reserved_periods[reservation_index][1], reserved_periods[reservation_index + 1][0]))
+
+        except IndexError:
+            if len(new_free_periods) == 0:
+                new_free_periods.append((open_time_start,closed_time_start))
+            else:
+                for period in new_free_periods:
+                    if period[0] == period[1]:
+                        new_free_periods.remove(period)
+                    else:
+                        continue
+            sorted_new_free_periods = sorted(new_free_periods, key=lambda x: x[0])
+            return sorted_new_free_periods
+
+    @staticmethod
+    def search_for_next_open_term(booking_date_time, free_periods, booking_period):
         """
         Finds the next available time slot for a booking based on the provided booking date and time,
         a list of already reserved time periods, and the duration of the booking.
 
         Args:
             booking_date_time (datetime.datetime): The date and time of the booking.
-            reserved_periods (list): A list of tuples representing already reserved time periods, where each tuple contains the start and end times.
+            free_periods (list): A list of tuples representing already reserved time periods, where each tuple contains the start and end times.
             booking_period (datetime.timedelta): The duration of the booking.
 
         Returns:
             tuple: A tuple containing the start and end times of the next available time slot for the booking.
         """
-        booking_start_time = booking_date_time.time()
+        booking_start_time = booking_date_time
         booking_end = booking_date_time + booking_period
-        booking_end_time = booking_end.time()
+        booking_end_time = booking_end
         try:
-            start_time_first_reservation = reserved_periods[0][0]
-            end_time_first_reservation = reserved_periods[0][1]
+            first_bookable_term_start = free_periods[0][0]
+            first_bookable_term_end = free_periods[0][1]
             check_current_reservation = (
-                ReservationValidators.get_next_available_reservation_time(
-                    start_time_first_reservation,
-                    end_time_first_reservation,
-                    reserved_periods,
+                ReservationValidators.search_next_bookable_term(
+                    first_bookable_term_start,
+                    first_bookable_term_end,
+                    free_periods,
                     booking_period,
                     booking_date_time,
                     booking_start_time,
@@ -186,95 +211,65 @@ class ReservationValidators:
         except IndexError:
             return booking_date_time, booking_end
 
+
     @staticmethod
-    def get_next_available_reservation_time(
-        start_time_reserved_term,
-        end_time_reserved_term,
-        reserved_periods,
-        booking_period,
-        booking_date_time,
-        booking_start_time,
-        booking_end_time,
-    ):
-        """
-            Finds the next available reservation time for a booking given a list of already reserved periods.
-
-        Args:
-            start_time_reserved_term (datetime.time): The start time of the current reserved period.
-            end_time_reserved_term (datetime.time): The end time of the current reserved period.
-            reserved_periods (list): A list of tuples representing already reserved periods, where each tuple contains
-                                     the start and end times of the reservation as datetime.time objects.
-            booking_period (datetime.timedelta): The length of a reservation period.
-            booking_date_time (datetime.datetime): The date and time of the booking as a datetime object.
-            booking_start_time (datetime.time): The desired start time of the booking.
-            booking_end_time (datetime.time): The desired end time of the booking.
-
-        Returns:
-            A tuple with the start and end time of the next available reservation period as datetime.time objects.
-            If no available reservation is found, returns the start and end time of the last reserved period plus
-            the booking period, or the original booking start and end times if there are no reserved periods.
-        """
-        try:
-
-            index_current_reservation = reserved_periods.index(
-                (start_time_reserved_term, end_time_reserved_term)
-            )
-            start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
-                booking_date_time, start_time_reserved_term
-            )
-            end_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
-                booking_date_time, end_time_reserved_term
-            )
-
-            next_reservation = reserved_periods[index_current_reservation + 1]
-            next_reservation_start_time = next_reservation[0]
-            next_reservation_end_time = next_reservation[1]
-            next_booking_start_time = start_time_reserved_term + booking_period
-            next_booking_end_time = end_time_reserved_term + booking_period
-
-            end_time_last_reservation = reserved_periods[-1][1]
-            start_time_first_reservation = reserved_periods[0][0]
-
-            if (
-                booking_end_time <= start_time_first_reservation
-                or booking_start_time >= end_time_last_reservation
-            ):
-                return booking_start_time, booking_end_time
-
-            elif next_reservation_start_time >= booking_start_time:
-                if (
-                    start_time_reserved_term <= next_booking_start_time
-                    and next_reservation_start_time >= next_booking_end_time.time()
-                ):
-                    new_booking_end_time = end_time_reserved_term + booking_period
-
-                    return end_time_reserved_term.time(), new_booking_end_time.time()
-
-            check_next_reservation = (
-                ReservationValidators.get_next_available_reservation_time(
-                    next_reservation_start_time,
-                    next_reservation_end_time,
-                    reserved_periods,
+    def search_next_bookable_term(
+                    current_bookable_term_start,
+                    current_bookable_term_end,
+                    free_periods,
                     booking_period,
-                    next_booking_end_time,
+                    booking_date_time,
                     booking_start_time,
                     booking_end_time,
-                )
+                ):
+
+
+        for period in free_periods:
+            start_time_free_period = DateTimeConverter.convert_time_to_datetime(
+            booking_date_time, period[0]
             )
-            return check_next_reservation
-        except IndexError:
-            if len(reserved_periods) == 0:
-                return booking_start_time, booking_end_time
-            else:
-                start_time_reserved_term = DateTimeConverter.convert_time_to_datetime(
-                    booking_date_time, reserved_periods[-1][1]
-                )
-                end_time_reserved_term = start_time_reserved_term + booking_period
-                return start_time_reserved_term, end_time_reserved_term
+            end_time_free_period = DateTimeConverter.convert_time_to_datetime(
+            booking_date_time, period[1]
+            )
+            current_checked_open_bookable_period = end_time_free_period - start_time_free_period
+            print('free periody', free_periods)
+            print('free stasrt period',start_time_free_period)
+            print('free end period',end_time_free_period)
+            print(booking_start_time, start_time_free_period)
+                #08:00                   06:30
+            # if booking_start_time >= start_time_free_period:
+            #     print(1)
+            #     print(booking_period, current_checked_open_bookable_period)
+            if booking_period <= current_checked_open_bookable_period:
+                print(2)
+                print(booking_period, current_checked_open_bookable_period)
+                print('start',booking_start_time, start_time_free_period)
+                print('end',booking_end_time, end_time_free_period)
+                print('type', booking_end_time, end_time_free_period, booking_start_time)
+                # if booking_end_time <= end_time_free_period:
+                #     print('prawda')
+                #     print('drugi if', booking_start_time.timestamp(), start_time_free_period.timestamp(), end_time_free_period.timestamp())
+                #
+                # if int(booking_start_time.timestamp()) in range(int(start_time_free_period.timestamp()), int(end_time_free_period.timestamp())):
+                #     print(True)
+
+                            # 09:00                                     09:30
+                if int(booking_start_time.timestamp()) in range(int(start_time_free_period.timestamp()), int(end_time_free_period.timestamp())) and booking_end_time <= end_time_free_period:
+                    print(3)
+                    return booking_start_time, booking_end_time
+                elif booking_start_time < start_time_free_period:
+                    return start_time_free_period, start_time_free_period+booking_period
+                elif booking_end_time > end_time_free_period:
+                    return end_time_free_period - booking_period, end_time_free_period
+                else:
+                    continue
+
+
+
 
     @staticmethod
     def validate_booking_time_is_not_forbidden(
-        booking_date_time, validated_booking_time=None
+            booking_date_time, validated_booking_time=None
     ):
         """
         Check if the specified booking time is allowed.
@@ -296,7 +291,6 @@ class ReservationValidators:
         date_time_too_late = DateTimeConverter.convert_time_to_datetime(
             booking_date_time, too_late
         )
-
         if validated_booking_time is None:
             booking_start_time = booking_date_time
             booking_end_time = booking_date_time
@@ -304,7 +298,9 @@ class ReservationValidators:
             booking_start_time = validated_booking_time[0]
             booking_end_time = validated_booking_time[1]
 
+
         if (
+
             booking_start_time < date_time_too_early
             or booking_end_time > date_time_too_late
         ):
@@ -312,11 +308,13 @@ class ReservationValidators:
                 "Tennis court is closed between 22:00 - 06:00\nPlease choose other reservation time"
             )
             return
-        return False
+        else:
+            return False
+
 
     @staticmethod
     def validate_reservation_exist(
-        name, schedule, cancel_reservation_date, cancel_reservation_time
+            name, schedule, cancel_reservation_date, cancel_reservation_time
     ):
         """
         Check if a reservation exists.
@@ -336,8 +334,8 @@ class ReservationValidators:
                 reservation_to_cancel_index = 0
                 for reservation in list_reservation:
                     if (
-                        reservation["start_time"] == cancel_reservation_time
-                        and reservation["name"] == name
+                            reservation["start_time"] == cancel_reservation_time
+                            and reservation["name"] == name
                     ):
                         return reservation_to_cancel_index
                     else:
