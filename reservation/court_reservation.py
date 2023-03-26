@@ -75,6 +75,7 @@ class Reservation:
                     self.validated_booking_time = validation
                     self.booking_date_time = booking_date_time
                 elif validation is None:
+                    print('Probably there is no more free term this day, try to book another day')
                     self.set_booking_date_time()
         except ValueError:
             print("Invalid date format, Please try again")

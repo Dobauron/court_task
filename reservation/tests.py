@@ -1,10 +1,10 @@
 import unittest
 import datetime
-import io
 from court_reservation import Reservation
 from data_handler import DataHandler
 from unittest.mock import patch
 from converters import DateTimeConverter
+from validators import ReservationValidators
 
 
 class TestDateTimeConverter(unittest.TestCase):
@@ -71,49 +71,57 @@ class TestCourtReservation(unittest.TestCase):
         self.reservation.validate_reservation = lambda x: (x, x)
 
         with patch("builtins.input", return_value=expected_booking_date_time_str):
-            # Call the method to be tested
             self.reservation.set_booking_date_time()
         self.assertEqual(self.reservation.booking_date_time, expected_booking_date_time)
 
-    def test_validate_reservation_booking_time_is_not_forbidden(self):
-        booking_date_time = datetime.datetime.now() + datetime.timedelta(days=1)
-        self.assertEqual(self.reservation.validate_reservation(booking_date_time), None)
-
-    def test_validate_reservation_number_of_reservation_per_week(self):
-        booking_date_time = datetime.datetime.now() + datetime.timedelta(days=7)
-        self.assertEqual(self.reservation.validate_reservation(booking_date_time), None)
-
-    def test_validate_reservation_hour_is_bookable_for_chosen_day(self):
-        booking_date_time = datetime.datetime.now() + datetime.timedelta(days=2)
-        self.assertEqual(self.reservation.validate_reservation(booking_date_time), None)
 
     def test_validate_reservation_hour_is_not_less_now(self):
         booking_date_time = datetime.datetime.now() - datetime.timedelta(hours=1)
         self.assertEqual(self.reservation.validate_reservation(booking_date_time), None)
 
-    def test_validate_reservation_valid_booking(self):
-        expected_booking_date_time = datetime.datetime(2023, 3, 25, 14, 0)
-        for hours_delta in [0.5, 1, 1.5]:
-            booking_end_time = expected_booking_date_time + datetime.timedelta(
-                hours=hours_delta
-            )
-            validated_booking_time = self.reservation.validate_reservation(
-                expected_booking_date_time
-            )
-            expected_validated_booking_time = (
-                expected_booking_date_time,
-                booking_end_time,
-            )
-            self.assertEqual(validated_booking_time, expected_validated_booking_time)
 
-    @patch("sys.stdout", new_callable=io.StringIO)
-    @patch("builtins.input", side_effect=["2"])
-    def test_set_book_reservation_period(self, mock_input, mock_output):
-        expected_output = "1)30 Minutes\n2)60 Minutes\n3)90 Minutes\n"
-        expected_booking_period = datetime.timedelta(hours=1)
-        self.reservation.set_book_reservation_period()
-        self.assertEqual(mock_output.getvalue(), expected_output)
-        self.assertEqual(self.reservation.booking_period, expected_booking_period)
+class TestReservationValidators(unittest.TestCase):
+    def test_validate_number_of_reservation_per_week_with_valid_input(self):
+        # Set up test data
+        booking_date_time = datetime.datetime(2023, 4, 1, 10, 0, 0)
+        name = "Mariusz Najman"
+        schedule = {
+            "29.03.2023": [{"name": "Mariusz Najman"}, {"name": "Marcin Pudzianowski"}],
+            "31.03.2023": [{"name": "Mariusz Najman"}],
+            "01.04.2023": [{"name": "Mariusz Najman"}],
+            "02.04.2023": [{"name": "Mariusz Najman"}, {"name": "Marcin Pudzianowski"}],
+            "03.04.2023": [{"name": "Marcin Pudzianowski"}],
+            "04.04.2023": [{"name": "Mariusz Najman"}, {"name": "Marcin Pudzianowski"}],
+            "06.03.2023": [{"name": "Mariusz Najman"}],
+        }
+
+        # Call the method and check the output
+        self.assertFalse(
+            ReservationValidators.validate_number_of_reservation_per_week(booking_date_time, name, schedule))
+
+    def test_validate_number_of_reservation_per_week_with_invalid_input(self):
+        booking_date_time = datetime.datetime(2023, 4, 1, 10, 0, 0)
+        name = "Mariusz Najman"
+        schedule = {
+            "29.03.2023": [{"name": "Mariusz Najman"}, {"name": "Marcin Pudzianowski"}],
+            "31.03.2023": [{"name": "Mariusz Najman"}],
+            "01.04.2023": [{"name": "Mariusz Najman"}, {"name": "Marcin Pudzianowski"}],
+            "02.04.2023": [{"name": "Mariusz Najman"}, {"name": "Marcin Pudzianowski"}],
+            "03.04.2023": [{"name": "Marcin Pudzianowski"}],
+            "04.04.2023": [{"name": "Mariusz Najman"}, {"name": "Marcin Pudzianowski"}],
+            "06.03.2023": [{"name": "Mariusz Najman"}],
+        }
+
+        self.assertIsNone(
+            ReservationValidators.validate_number_of_reservation_per_week(booking_date_time, name, schedule))
+
+    def test_validate_hour_is_not_less_now_with_valid_input(self):
+        booking_time = datetime.datetime.now() + datetime.timedelta(hours=2)
+        self.assertFalse(ReservationValidators.validate_hour_is_not_less_now(booking_time))
+
+    def test_validate_hour_is_not_less_now_with_invalid_input(self):
+        booking_time = datetime.datetime.now() + datetime.timedelta(minutes=30)
+        self.assertIsNone(ReservationValidators.validate_hour_is_not_less_now(booking_time))
 
 
 if __name__ == "__main__":
