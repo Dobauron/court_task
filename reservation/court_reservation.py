@@ -120,14 +120,12 @@ class Reservation:
                 if validated_booking_time is False:
                     return
                 else:
-
                     if (
                         ReservationValidators.validate_hour_is_not_less_now(
                             booking_date_time
                         )
                         is False
                     ):
-
                         if (
                             ReservationValidators.validate_booking_time_is_not_forbidden(
                                 booking_date_time,
@@ -135,12 +133,10 @@ class Reservation:
                             )
                             is None
                         ):
-
                             return
 
                         else:
                             return validated_booking_time
-
 
     def set_book_reservation_period(self):
         print("1)30 Minutes\n2)60 Minutes\n3)90 Minutes")
