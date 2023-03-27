@@ -50,7 +50,7 @@ class ReservationValidators:
                         user_reservation_current_week += 1
         if user_reservation_current_week >= 2:
             print(
-                "You are not allowed to book court more then two times per week\tYou can make reservation next week"
+                "You are not allowed to book court more then two times per week\nYou can try to book next week"
             )
         else:
             return False
@@ -311,7 +311,7 @@ class ReservationValidators:
             booking_end_time = validated_booking_time[1]
 
         if (
-            booking_start_time < date_time_too_early
+            booking_start_time < date_time_too_early or booking_start_time >= date_time_too_late
             or booking_end_time > date_time_too_late
         ):
             print(
