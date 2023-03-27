@@ -276,8 +276,12 @@ class ReservationValidators:
                             end_time_free_period - booking_period,
                             end_time_free_period,
                         )
-                    else:
-                        continue
+
+                elif booking_start_time <= end_time_free_period:
+                    return (
+                        end_time_free_period - booking_period,
+                        end_time_free_period,
+                    )
 
     @staticmethod
     def validate_booking_time_is_not_forbidden(
@@ -311,7 +315,8 @@ class ReservationValidators:
             booking_end_time = validated_booking_time[1]
 
         if (
-            booking_start_time < date_time_too_early or booking_start_time >= date_time_too_late
+            booking_start_time < date_time_too_early
+            or booking_start_time >= date_time_too_late
             or booking_end_time > date_time_too_late
         ):
             print(

@@ -117,13 +117,14 @@ class Reservation:
         """
         if (
             ReservationValidators.validate_booking_time_is_not_forbidden(
-                booking_date_time)
+                booking_date_time
+            )
             is False
             and ReservationValidators.validate_number_of_reservation_per_week(
-                    booking_date_time, self.name, self.schedule)
+                booking_date_time, self.name, self.schedule
+            )
             is False
-            and ReservationValidators.validate_hour_is_not_less_now(
-                            booking_date_time)
+            and ReservationValidators.validate_hour_is_not_less_now(booking_date_time)
             is False
         ):
             self.set_book_reservation_period()
