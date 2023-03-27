@@ -153,7 +153,8 @@ class ReservationValidators:
         """Resets the schedule and creates a list of free periods given a list of reserved periods.
 
         Args:
-            reserved_periods (list of tuples): A list of tuples representing the reserved periods in the format (start_time, end_time).
+            reserved_periods (list of tuples): A list of tuples representing the reserved periods in the format
+             (start_time, end_time).
 
         Returns:
             list of tuples: A list of tuples representing the free periods in the format (start_time, end_time).
@@ -193,7 +194,8 @@ class ReservationValidators:
 
         Args:
             booking_date_time (datetime.datetime): The date and time of the booking.
-            free_periods (list): A list of tuples representing already reserved time periods, where each tuple contains the start and end times.
+            free_periods (list): A list of tuples representing already reserved time periods,
+                where each tuple contains the start and end times.
             booking_period (datetime.timedelta): The duration of the booking.
 
         Returns:
@@ -222,20 +224,19 @@ class ReservationValidators:
         booking_start_time,
         booking_end_time,
     ):
-        """Searches for the next bookable period given a list of free periods, a booking period,
-         and a booking start and end time.
+        """
+        Searches for the next bookable period based on the given parameters.
 
         Args:
-            free_periods (list of tuples): A list of tuples representing the free periods in the format
-                (start_time, end_time).
-            booking_period (datetime.timedelta): The duration of the booking period.
-            booking_date_time (datetime.datetime): The date and time of the booking in the format YYYY-MM-DD HH:MM:SS.
-            booking_start_time (datetime.datetime): The start time of the booking in the format YYYY-MM-DD HH:MM:SS.
-            booking_end_time (datetime.datetime): The end time of the booking in the format YYYY-MM-DD HH:MM:SS.
+            free_periods (list): List of tuples representing the start and end times of free periods.
+            booking_period (datetime.timedelta): Length of the booking period.
+            booking_date_time (datetime.datetime): Date and time of the booking.
+            booking_start_time (datetime.datetime): Start time of the booking.
+            booking_end_time (datetime.datetime): End time of the booking.
 
         Returns:
-            tuple: A tuple representing the next bookable period. If a bookable period is found,
-             it returns a tuple in the format (start_time, end_time). If no bookable period is found, it returns None.
+            tuple: A tuple representing the start and end times of the next bookable period if one is found,
+                or None if not.
         """
         for period in free_periods:
             start_time_free_period = DateTimeConverter.convert_time_to_datetime(
@@ -258,7 +259,6 @@ class ReservationValidators:
                 ):
                     return booking_start_time, booking_end_time
                 elif (
-
                     int(booking_start_time.timestamp())
                     in range(
                         int(start_time_free_period.timestamp()),
@@ -272,11 +272,12 @@ class ReservationValidators:
                             start_time_free_period + booking_period,
                         )
                     elif booking_end_time > end_time_free_period:
-                        return end_time_free_period - booking_period, end_time_free_period
+                        return (
+                            end_time_free_period - booking_period,
+                            end_time_free_period,
+                        )
                     else:
                         continue
-
-
 
     @staticmethod
     def validate_booking_time_is_not_forbidden(

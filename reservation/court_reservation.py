@@ -62,6 +62,19 @@ class Reservation:
         self.name = input("What's your Name?")
 
     def set_booking_date_time(self):
+        """
+        Sets the booking date and time based on user input.
+        Prompts the user to enter a date and time in the format 'DD.MM.YYYY HH:MM',
+        and validates whether a reservation is possible for that time based on the current schedule.
+        If the requested time is not available, the user is prompted to try again with a different time.
+        If the user enters an invalid date format, they will be prompted to try again.
+        If the method encounters an unexpected TypeError with the `validated_booking_time` attribute,
+            it will print an error message.
+
+        Returns:
+            None
+
+        """
         try:
             while self.validated_booking_time is None:
                 booking_date_time_str = input(
@@ -111,9 +124,7 @@ class Reservation:
                 booking_date_time, self.name, self.schedule
             )
             is False
-            and ReservationValidators.validate_hour_is_not_less_now(
-                        booking_date_time
-            )
+            and ReservationValidators.validate_hour_is_not_less_now(booking_date_time)
         ):
             self.set_book_reservation_period()
             validated_booking_time = (
@@ -169,7 +180,7 @@ class Reservation:
                 self.schedule[date_key] = [data]
             print("Your reservation has been successfully added to schedule")
         except TypeError:
-            print("validated_booking_time is propably None")
+            print("validated_booking_time is probably None")
         finally:
             self.validated_booking_time = None
 
@@ -213,12 +224,24 @@ class Reservation:
             is False
         ):
             del self.schedule[cancel_reservation_date][reservation_to_cancel_index]
-            print("Specified reservation was deleted from schedule")
+            print("Specified reservation has been deleted from schedule")
         else:
             print("There is no reservation with specified data")
             return
 
     def show_schedule(self):
+        """
+        Displays the schedule for a user-specified range of dates.
+
+        Prompts the user to input the start and end dates for the range, and then
+        iterates over all dates in the range. For each date, it prints the name of
+        the day (e.g. "Today", "Tomorrow", "Monday") followed by a list of
+        reservations for that day, if any. If there are no reservations for the
+        day, it prints a message indicating so.
+
+        Raises:
+            ValueError: if an invalid date format is entered.
+        """
         try:
             range_date = self.get_all_day_user_specify_range()
             for date in range_date:
@@ -241,6 +264,10 @@ class Reservation:
             self.show_schedule()
 
     def save_schedule_to_file(self):
+        """
+        Saves reservations within a specified date range to a file in either CSV or JSON format.
+        Prompts the user to input the file format and file name.
+        """
         range_date = self.get_all_day_user_specify_range()
         date_reservation_specified_by_user = {}
         for date in range_date:
@@ -257,23 +284,37 @@ class Reservation:
                         date_reservation_specified_by_user[date_str].append(data)
                     else:
                         date_reservation_specified_by_user[date_str] = [data]
-
-        file_type = input("Specify, how would you like to save data (json/csv): ")
-        filename = input("Specify, how file should be named: ")
-        if file_type == "csv":
-            self.data_handler.save_schedule_in_csv(
-                filename + ".csv", date_reservation_specified_by_user
-            )
-        elif file_type == "json":
-            self.data_handler.save_schedule_in_json(
-                filename + ".json", date_reservation_specified_by_user
-            )
-        else:
-            print("You have to choose json or csv")
-            self.save_schedule_to_file()
+        while True:
+            file_type = input("Specify, how would you like to save data (json/csv): ")
+            filename = input("Specify, how file should be named: ")
+            if file_type == "csv":
+                self.data_handler.save_schedule_in_csv(
+                    filename + ".csv", date_reservation_specified_by_user
+                )
+                break
+            elif file_type == "json":
+                self.data_handler.save_schedule_in_json(
+                    filename + ".json", date_reservation_specified_by_user
+                )
+                break
+            else:
+                print("You have to choose json or csv")
 
     @staticmethod
     def name_day_in_schedule(date):
+        """
+        Given a date, returns a string that represents the day of the week in the schedule,
+        such as "Today", "Tomorrow", "Yesterday", or the actual day name.
+
+        Args:
+            date (datetime.date): The date to be converted into a day name.
+
+        Returns:
+            str: The string representing the day name in the schedule.
+
+        Raises:
+            TypeError: If the argument is not an instance of datetime.date.
+        """
         day_name = DateTimeConverter.get_day_name(date)
         today = datetime.datetime.today().date()
         tomorrow = today + datetime.timedelta(days=1)
@@ -289,6 +330,15 @@ class Reservation:
 
     @staticmethod
     def get_all_day_user_specify_range():
+        """
+        Prompts the user to input a start and end date in the format of "DD.MM.YYYY", then generates a list of all dates
+        in the range between the start and end date, inclusive.
+
+        Returns:
+            A list of datetime.date objects representing all dates in the range between the start and end date,
+                inclusive.
+        """
+
         start_date = input(
             "Please specify from which date you want to print/save schedule {DD.MM.YYYY}: "
         )

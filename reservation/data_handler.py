@@ -13,7 +13,7 @@ class DataHandler:
         """
         Saves the reservation data to the JSON file under the specified date key.
         """
-        self.sort_before_save(date_reservation_specified_by_user)
+        self.sort_before_save()
         with open(filename, "w") as f:
             json.dump(date_reservation_specified_by_user, f, indent=4)
 
@@ -21,7 +21,7 @@ class DataHandler:
         """
         Saves the schedule data to a CSV file specified by the given filename.
         """
-        self.sort_before_save(filename)
+        self.sort_before_save()
         with open(filename, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(
@@ -41,7 +41,7 @@ class DataHandler:
                         ]
                     )
 
-    def sort_before_save(self, schedule):
+    def sort_before_save(self):
         """
         Sorts the reservations stored in the schedule attribute first based on date than on start time.
         """
