@@ -81,7 +81,6 @@ class TestCourtReservation(unittest.TestCase):
 
 class TestReservationValidators(unittest.TestCase):
     def test_validate_number_of_reservation_per_week_with_valid_input(self):
-        # Set up test data
         booking_date_time = datetime.datetime(2023, 4, 1, 10, 0, 0)
         name = "Mariusz Najman"
         schedule = {
@@ -94,7 +93,6 @@ class TestReservationValidators(unittest.TestCase):
             "06.03.2023": [{"name": "Mariusz Najman"}],
         }
 
-        # Call the method and check the output
         self.assertFalse(
             ReservationValidators.validate_number_of_reservation_per_week(
                 booking_date_time, name, schedule

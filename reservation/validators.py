@@ -81,7 +81,7 @@ class ReservationValidators:
             booking_period (datetime.timedelta): The duration of the booking.
 
         Returns:
-            Union[Tuple[datetime.time, datetime.time], bool]: If the requested time slot is
+            Tuple[datetime.time, datetime.time], bool: If the requested time slot is
             available, the method returns a tuple containing the start and end times of the
             booking. If the requested time slot is not available and the user chooses to make
             a reservation for the suggested time slot, the method returns a tuple containing
