@@ -12,4 +12,6 @@
 - to show all package
 > `poetry show`
 - run script
-> poetry run python reservation/dashboard.py
+> `poetry run python reservation/dashboard.py`
+- run unittest
+> `poetry run python reservation/tests.py`
